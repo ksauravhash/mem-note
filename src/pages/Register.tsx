@@ -8,10 +8,10 @@ import {
   Grid2 as Grid,
   Link,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useNavigate } from "react-router";
 import StyledPaper from "./StyledPaper";
-
-
+import axiosInstance from "../utility/axiosInstance";
+import axios from "axios";
 
 const RegisterPage = () => {
   const [registrationDetail, setRegistrationDetails] = useState({
@@ -19,6 +19,7 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    name: "",
   });
 
   const [error, setError] = useState({
@@ -26,10 +27,20 @@ const RegisterPage = () => {
     emailError: "",
     passwordError: "",
     confirmPasswordError: "",
+    nameError: "",
   });
-  const { username, email, password, confirmPassword } = registrationDetail;
-  const { usernameError, emailError, passwordError, confirmPasswordError } =
-    error;
+
+  const navigate = useNavigate();
+
+  const { username, email, password, confirmPassword, name } =
+    registrationDetail;
+  const {
+    usernameError,
+    emailError,
+    passwordError,
+    confirmPasswordError,
+    nameError,
+  } = error;
 
   const validateUsername = (username: string): boolean => {
     return !!username;
@@ -48,7 +59,9 @@ const RegisterPage = () => {
     return password == confirmPassword;
   };
 
-  const handleRegister: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleRegister: React.MouseEventHandler<HTMLButtonElement> = async (
+    e
+  ) => {
     e.preventDefault();
     let isValid = true;
     const errorOb = {
@@ -56,6 +69,7 @@ const RegisterPage = () => {
       emailError: "",
       passwordError: "",
       confirmPasswordError: "",
+      nameError: "",
     };
 
     // Username validation
@@ -85,7 +99,7 @@ const RegisterPage = () => {
       errorOb.passwordError = "Password is required";
       isValid = false;
     } else if (!validatePassword(password)) {
-      errorOb.passwordError = "Password must be at least 6 characters long";
+      errorOb.passwordError = "Password must be at least 8 characters long";
       isValid = false;
     } else {
       errorOb.passwordError = "";
@@ -102,11 +116,28 @@ const RegisterPage = () => {
       errorOb.confirmPasswordError = "";
     }
 
+    if (!name) {
+      errorOb.nameError = "Name is required";
+      isValid = false;
+    } else {
+      errorOb.nameError = "";
+    }
+
     setError(errorOb);
     if (isValid) {
-      console.log("Registration Successful:", { email, password });
-      // Proceed with Register (e.g., API call)
-      // TODO : To be implemented after backend #backend
+      try {
+        const { confirmPassword, ...payload } = registrationDetail;
+        await axiosInstance.post("user/register", payload);
+        navigate("/login");
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          if (err.status == 400) {
+            navigate("/");
+          } else if (err.status && err.status >= 500 && err.status < 600) {
+            navigate("/serverError");
+          }
+        }
+      }
     }
   };
 
@@ -137,6 +168,22 @@ const RegisterPage = () => {
         </Box>
         <form>
           <Grid container spacing={2}>
+            {/* Name Input */}
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label="Name"
+                type="name"
+                name="name"
+                variant="outlined"
+                value={name}
+                onChange={handleChange}
+                error={!!nameError}
+                helperText={nameError}
+                required
+              />
+            </Grid>
+            {/* Username Input */}
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth

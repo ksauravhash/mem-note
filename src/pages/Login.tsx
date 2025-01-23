@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Container,
   TextField,
@@ -8,36 +8,45 @@ import {
   Grid2 as Grid,
   Link,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useNavigate } from "react-router";
 import StyledPaper from "./StyledPaper";
+import axiosInstance from "../utility/axiosInstance";
+import axios from "axios";
+import { AuthContext } from "../components/Auth";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
+  const [usernameError, setUsernameError] = useState<string>("");
   const [passwordError, setPasswordError] = useState<string>("");
+  const [serverError, setServerError] = useState<string>("");
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const navigate = useNavigate();
+
+  const authValuesOb = useContext(AuthContext);
+
+  const validateUsername = (username: string): boolean => {
+    return !!username;
   };
 
   const validatePassword = (password: string): boolean => {
     return password.length >= 6;
   };
 
-  const handleLogin = () => {
+  const handleLogin: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
+    e.preventDefault();
     let isValid = true;
+    setServerError("");
 
-    // Email validation
-    if (!email) {
-      setEmailError("Email is required");
+    // Username validation
+    if (!username) {
+      setUsernameError("Username is required");
       isValid = false;
-    } else if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address");
+    } else if (!validateUsername(username)) {
+      setUsernameError("Please enter a valid username");
       isValid = false;
     } else {
-      setEmailError("");
+      setUsernameError("");
     }
 
     // Password validation
@@ -52,8 +61,22 @@ const LoginPage = () => {
     }
 
     if (isValid) {
-      console.log("Login Successful:", { email, password });
-      // Proceed with login (e.g., API call)
+      try {
+        const payload = { username, password };
+        const loginResponse = await axiosInstance.post("user/login", payload);
+        const loginData = loginResponse.data;
+        authValuesOb?.updateAuth(loginData);
+        navigate('/');
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status == 401) {
+            console.log(err.response);
+            setServerError(err.response?.data.error);
+          } else if (err.status && err.status >= 500 && err.status < 600) {
+            navigate("/serverError");
+          }
+        }
+      }
     }
   };
 
@@ -75,17 +98,17 @@ const LoginPage = () => {
         </Box>
         <form>
           <Grid container spacing={2}>
-            {/* Email Input */}
+            {/* Username Input */}
             <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
-                label="Email"
-                type="email"
+                label="Username"
+                type="username"
                 variant="outlined"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={!!emailError}
-                helperText={emailError}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                error={!!usernameError}
+                helperText={usernameError}
                 required
               />
             </Grid>
@@ -105,6 +128,15 @@ const LoginPage = () => {
               />
             </Grid>
           </Grid>
+
+          {/* Server Error Message */}
+           
+            <Box mt={2} textAlign="center">
+              <Typography variant="body2" color="error">
+                {serverError}
+              </Typography>
+            </Box>
+          
 
           {/* Login Button */}
           <Box mt={3}>
