@@ -3,6 +3,7 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 export const AuthContext = createContext<{
   authValues?: AuthType;
   updateAuth: (authData: AuthType) => void;
+  clearAuth: ()=> void;
 }| null>(null);
 const authStorageName = "auth";
 
@@ -12,6 +13,11 @@ const Auth = ({ children }: { children?: ReactNode }) => {
     localStorage.setItem(authStorageName, JSON.stringify(authData));
     setAuthValues(authData);
   };
+
+  const clearAuth = ()=> {
+    localStorage.removeItem(authStorageName);
+    setAuthValues(undefined);
+  }
 
   useEffect(() => {
     const authObString = localStorage.getItem(authStorageName);
@@ -23,7 +29,7 @@ const Auth = ({ children }: { children?: ReactNode }) => {
     }
   }, []);
   return (
-    <AuthContext.Provider value={{ authValues, updateAuth }}>
+    <AuthContext.Provider value={{ authValues, updateAuth, clearAuth }}>
       {children}
     </AuthContext.Provider>
   );

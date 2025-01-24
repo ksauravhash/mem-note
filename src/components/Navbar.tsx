@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Drawer,
   Grid2 as Grid,
@@ -9,6 +9,7 @@ import {
   ListItemText,
   IconButton,
   Link,
+  Box,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -16,16 +17,25 @@ import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import LogoutIcon from "@mui/icons-material/Logout";
+import UserIcon from "@mui/icons-material/AccountCircle";
+import { AuthContext } from "./Auth";
 
 const Navbar = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false); // Mobile drawer
   const [isCollapsed, setCollapsed] = useState(false); // Collapsible desktop
+
+  const authValuesOb = useContext(AuthContext);
 
   const navItems = [
     { text: "Home", icon: <HomeIcon />, to: "/" },
     { text: "About", icon: <InfoIcon />, to: "/about" },
     { text: "Contact", icon: <ContactMailIcon />, to: "contact" },
   ];
+
+  const logout = () => {
+    authValuesOb?.clearAuth();
+  };
 
   return (
     <Grid container sx={{ height: "100vh" }}>
@@ -46,8 +56,24 @@ const Navbar = () => {
         onClose={() => setDrawerOpen(false)}
         sx={{ display: { xs: "block", sm: "none" } }}
       >
-        <Grid size={{ xs: 12 }} sx={{ width: 250 }}>
+        <Grid
+          container
+          direction="column"
+          justifyContent="space-between"
+          sx={{ height: "100%", width: 250 }}
+        >
+          {/* Navigation Items */}
           <List>
+            {authValuesOb?.authValues?.user && (
+              <ListItem disablePadding>
+                <ListItemButton>
+                  <ListItemIcon>
+                    <UserIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={authValuesOb.authValues.user.name} />
+                </ListItemButton>
+              </ListItem>
+            )}
             {navItems.map((item, index) => (
               <ListItem key={index} disablePadding>
                 <ListItemButton>
@@ -58,6 +84,16 @@ const Navbar = () => {
             ))}
           </List>
         </Grid>
+        {authValuesOb?.authValues?.user && (
+          <ListItem disablePadding>
+            <ListItemButton onClick={logout}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary={"Logout"} />
+            </ListItemButton>
+          </ListItem>
+        )}
       </Drawer>
 
       {/* Desktop Sidebar */}
@@ -72,45 +108,116 @@ const Navbar = () => {
       >
         <Grid
           container
-          alignItems="center"
+          direction="column"
           justifyContent="space-between"
-          sx={{ p: 2 }}
+          sx={{ height: "100%" }}
         >
-          <IconButton onClick={() => setCollapsed(!isCollapsed)}>
-            <ChevronLeftIcon
+          {/* Collapsible Header */}
+          <Grid>
+            <Box
               sx={{
-                transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease",
+                p: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
-            />
-          </IconButton>
-        </Grid>
-        <List>
-          {navItems.map((item, index) => (
-            <Link to={item.to} component={RouterLink} underline="none" color="textPrimary">
-              <ListItem key={index} disablePadding>
-                <ListItemButton
+            >
+              <IconButton onClick={() => setCollapsed(!isCollapsed)}>
+                <ChevronLeftIcon
                   sx={{
-                    justifyContent: isCollapsed ? "center" : "flex-start",
-                    px: isCollapsed ? 2 : 3,
-                    height: 60,
+                    transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s ease",
                   }}
-                >
-                  <ListItemIcon
+                />
+              </IconButton>
+            </Box>
+
+            {/* Navigation Items */}
+            <List>
+              {authValuesOb?.authValues && (
+                <ListItem disablePadding>
+                  <ListItemButton
                     sx={{
-                      minWidth: 0,
-                      mr: isCollapsed ? 0 : 2,
-                      justifyContent: "center",
+                      justifyContent: isCollapsed ? "center" : "flex-start",
+                      px: isCollapsed ? 2 : 3,
+                      height: 60,
                     }}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  {!isCollapsed && <ListItemText primary={item.text} />}
-                </ListItemButton>
-              </ListItem>
-            </Link>
-          ))}
-        </List>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: isCollapsed ? 0 : 2,
+                        justifyContent: "center",
+                      }}
+                    >
+                      <UserIcon />
+                    </ListItemIcon>
+                    {!isCollapsed && (
+                      <ListItemText
+                        primary={authValuesOb?.authValues?.user.name}
+                      />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+              )}
+              {navItems.map((item, index) => (
+                <Link
+                  to={item.to}
+                  key={index}
+                  component={RouterLink}
+                  underline="none"
+                  color="textPrimary"
+                >
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      sx={{
+                        justifyContent: isCollapsed ? "center" : "flex-start",
+                        px: isCollapsed ? 2 : 3,
+                        height: 60,
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: isCollapsed ? 0 : 2,
+                          justifyContent: "center",
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      {!isCollapsed && <ListItemText primary={item.text} />}
+                    </ListItemButton>
+                  </ListItem>
+                </Link>
+              ))}
+            </List>
+          </Grid>
+
+          {/* Logout Button */}
+          {authValuesOb?.authValues && (
+            <ListItem disablePadding>
+              <ListItemButton
+                sx={{
+                  justifyContent: isCollapsed ? "center" : "flex-start",
+                  px: isCollapsed ? 2 : 3,
+                  height: 60,
+                }}
+                onClick={logout}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: isCollapsed ? 0 : 2,
+                    justifyContent: "center",
+                  }}
+                >
+                  <LogoutIcon />
+                </ListItemIcon>
+                {!isCollapsed && <ListItemText primary={"Logout"} />}
+              </ListItemButton>
+            </ListItem>
+          )}
+        </Grid>
       </Grid>
     </Grid>
   );
