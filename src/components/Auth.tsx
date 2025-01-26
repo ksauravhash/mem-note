@@ -1,10 +1,11 @@
+import { jwtDecode } from "jwt-decode";
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 export const AuthContext = createContext<{
   authValues?: AuthType;
   updateAuth: (authData: AuthType) => void;
-  clearAuth: ()=> void;
-}| null>(null);
+  clearAuth: () => void;
+} | null>(null);
 const authStorageName = "auth";
 
 const Auth = ({ children }: { children?: ReactNode }) => {
@@ -14,17 +15,30 @@ const Auth = ({ children }: { children?: ReactNode }) => {
     setAuthValues(authData);
   };
 
-  const clearAuth = ()=> {
+  const clearAuth = () => {
     localStorage.removeItem(authStorageName);
     setAuthValues(undefined);
-  }
+  };
 
   useEffect(() => {
     const authObString = localStorage.getItem(authStorageName);
     if (authObString) {
       const authOb = JSON.parse(authObString);
-      if (authOb) {
-        setAuthValues(authOb);
+      try {
+        const secondsNow = Math.floor(Date.now()) / 1000;
+        const refreshTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
+        if (refreshTokenExpSeconds && refreshTokenExpSeconds - secondsNow > 0) {
+          const accessTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
+          if (accessTokenExpSeconds && accessTokenExpSeconds - secondsNow > 0)
+            setAuthValues(authOb);
+          else {
+            clearAuth();
+          }
+        } else {
+          clearAuth();
+        }
+      } catch (err) {
+        console.error(err);
       }
     }
   }, []);
