@@ -1,7 +1,6 @@
 import { Box, Button, Container, Link, Stack, Typography } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../utility/axiosInstance";
-import { AuthContext } from "./Auth";
 
 type NotebookData = {
   title: string;
@@ -10,14 +9,8 @@ type NotebookData = {
 
 const Dashboard = () => {
   const [recentNotebooks, setRecentNotebooks] = useState<NotebookData[]>();
-  const authVauesOb = useContext(AuthContext);
   const updateRecentNotebooks = async () => {
-    const notebooks = (await axiosInstance.get("/notebook/getRecentNotebooks", {
-      headers: {
-        Authorization: `bearer ${authVauesOb?.authValues?.accessToken}`,
-      },
-    })).data as NotebookData[];
-
+    const notebooks = (await axiosInstance.get("/notebook/getRecentNotebooks")).data as NotebookData[];
     setRecentNotebooks(notebooks);
   };
   useEffect(() => {

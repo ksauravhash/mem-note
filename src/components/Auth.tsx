@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { createContext, ReactNode, useEffect, useState } from "react";
+import axiosInstance from "../utility/axiosInstance";
 
 export const AuthContext = createContext<{
   authValues?: AuthType;
@@ -23,19 +24,30 @@ const Auth = ({ children }: { children?: ReactNode }) => {
   useEffect(() => {
     const authObString = localStorage.getItem(authStorageName);
     if (authObString) {
-      const authOb = JSON.parse(authObString);
+      const authOb: AuthType | undefined = JSON.parse(authObString);
       try {
-        const secondsNow = Math.floor(Date.now()) / 1000;
-        const refreshTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
-        if (refreshTokenExpSeconds && refreshTokenExpSeconds - secondsNow > 0) {
-          const accessTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
-          if (accessTokenExpSeconds && accessTokenExpSeconds - secondsNow > 0)
-            setAuthValues(authOb);
-          else {
+        if (authOb) {
+          const secondsNow = Math.floor(Date.now()) / 1000;
+          const refreshTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
+          if (
+            refreshTokenExpSeconds &&
+            refreshTokenExpSeconds - secondsNow > 0
+          ) {
+            const accessTokenExpSeconds = jwtDecode(authOb?.accessToken)?.exp;
+            if (
+              accessTokenExpSeconds &&
+              accessTokenExpSeconds - secondsNow > 0
+            ) {
+              axiosInstance.defaults.headers.common[
+                "Authorization"
+              ] = `Bearer ${authOb?.accessToken}`;
+              setAuthValues(authOb);
+            } else {
+              clearAuth();
+            }
+          } else {
             clearAuth();
           }
-        } else {
-          clearAuth();
         }
       } catch (err) {
         console.error(err);
