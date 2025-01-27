@@ -14,6 +14,10 @@ const Auth = ({ children }: { children?: ReactNode }) => {
   const updateAuth = (authData: AuthType) => {
     localStorage.setItem(authStorageName, JSON.stringify(authData));
     setAuthValues(authData);
+    console.log(authData);
+    axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${authData?.accessToken}`;
   };
 
   const clearAuth = () => {

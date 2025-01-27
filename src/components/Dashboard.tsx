@@ -27,7 +27,7 @@ const Dashboard = () => {
         </Typography>
         <Stack direction={"row"} spacing={2}>
           {recentNotebooks && recentNotebooks.map((item) => (
-            <Link component={Button}>{item.title}</Link>
+            <Link key={item.id} component={Button}>{item.title}</Link>
           ))}
         </Stack>
       </Container>
