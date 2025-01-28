@@ -16,6 +16,7 @@ import {
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utility/axiosInstance";
 import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router";
 
 type NotebookData = {
   title: string;
@@ -27,6 +28,7 @@ const Dashboard = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
+  const navigate = useNavigate();
   const updateRecentNotebooks = async () => {
     const notebooks = (await axiosInstance.get("/notebook/getRecentNotebooks"))
       .data as NotebookData[];
@@ -42,6 +44,10 @@ const Dashboard = () => {
     setShowDialog(false);
   };
 
+  const noteNavigationButtonClick = (noteID: string)=> {
+  navigate(`/note/${noteID}`);
+  }
+
   const handleAddActionButton: React.MouseEventHandler<
     HTMLButtonElement
   > = async () => {
@@ -50,13 +56,13 @@ const Dashboard = () => {
         const resp = await axiosInstance.post("/notebook/create", {
           title,
         });
-        const resp2 = await axiosInstance.post('/notebook/getNotebook', {
+        await axiosInstance.post('/notebook/getNotebook', {
           id: resp.data.id
         });
-        console.log(resp2.data);        
         setTitleError("");
         setTitle("");
         setShowDialog(false);
+        navigate(`note/${resp.data.id}`);
       } catch (err) {
         console.error(err);
       }
@@ -80,7 +86,7 @@ const Dashboard = () => {
         <Stack direction={"row"} spacing={2}>
           {recentNotebooks &&
             recentNotebooks.map((item) => (
-              <Link key={item.id} component={Button}>
+              <Link key={item.id} component={Button} onClick={()=>{noteNavigationButtonClick(item.id)}}>
                 {item.title}
               </Link>
             ))}
