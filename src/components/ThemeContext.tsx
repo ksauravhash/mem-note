@@ -14,12 +14,27 @@ const theme = createTheme({
     },
     h2: {
       fontFamily: '"Lexend", sans-serif',
-      fontSize: "2rem",
+      fontSize: "2.4rem",
+    },
+    h3: {
+      fontSize: "2rem"
+    },
+    h4: {
+      fontSize: '1.6rem'
+    },
+    h5: {
+      fontSize: '1.4rem'
+    },
+    h6: {
+      fontSize: '1.2rem'
     },
     body1: {
       fontFamily: '"Nunito", sans-serif',
       fontSize: "1rem",
     },
+    body2: {
+      fontSize: '0.875rem'
+    }
   },
 });
 
