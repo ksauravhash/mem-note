@@ -5,7 +5,7 @@ import { AuthContext } from "./Auth";
 
 export const ProtectedRoute = ({ children }: {children: React.ReactNode}) => {
   const authValues = useContext(AuthContext);
-  if (authValues)
+  if (authValues?.authValues)
     return children;
 
   return <Navigate to="/login" replace />;
