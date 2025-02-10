@@ -1,5 +1,5 @@
-export {}
-declare global{
+export { }
+declare global {
     interface AuthType {
         accessToken: string;
         refreshToken: string;
@@ -8,5 +8,6 @@ declare global{
             name: string;
             username: string;
         }
-    }    
+    }
+    type NoteBlockType = "word" | "description" | "image" | "audio";
 }

@@ -1,16 +1,18 @@
-import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography } from "@mui/material"
+import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography, Fab } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import { Notifications, Whatshot, BarChart } from "@mui/icons-material";
+import { Notifications, Whatshot, BarChart, Add as AddIcon } from "@mui/icons-material";
 import axiosInstance from "../utility/axiosInstance"
 import axios from "axios"
+import AddNoteForm from "../components/AddNoteForm";
+
 
 type noteParams = {
   noteId: string
 }
 
 type noteBlock = {
-  type: "word" | "image" | "audio";
+  type: NoteBlockType;
   content: string;
   sequenceNumber: number;
 }
@@ -36,6 +38,11 @@ const Note = () => {
    */
   const [streak, setStreak] = useState(5);
   const [progress, setProgress] = useState(70);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  }
 
   const getNotebook = async () => {
     try {
@@ -55,8 +62,8 @@ const Note = () => {
   }
   useEffect(() => {
     getNotebook();
-  })
-  if(!notebookData)
+  }, [])
+  if (!notebookData)
     return <></>
   return (
     <Container sx={{ p: 4 }}>
@@ -81,7 +88,7 @@ const Note = () => {
               <BarChart color="secondary" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Stats</Typography>
               <Typography variant="body1">Total Completion:
-                <Typography color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
+                <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
               </Typography>
               <LinearProgress variant="determinate" value={progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
             </CardContent>
@@ -99,6 +106,16 @@ const Note = () => {
           </Card>
         </Grid>
       </Grid>
+      <Fab variant="extended" size="large" sx={{
+        position: "fixed",
+        right: '1rem',
+        bottom: '1rem'
+      }}
+        onClick={() => { setShowModal(true) }}>
+        <AddIcon />
+        Add a note
+      </Fab>
+      <AddNoteForm showModal={showModal} handleClose={handleCloseModal} />
     </Container>
   )
 }
