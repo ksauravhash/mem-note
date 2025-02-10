@@ -58,8 +58,8 @@ const Auth = ({ children }: { children?: ReactNode }) => {
       } catch (err) {
         console.error(err);
       }
-      setAuthLoading(false);
     }
+    setAuthLoading(false);
   }, []);
   return (
     <AuthContext.Provider value={{ authValues, updateAuth, clearAuth, authLoading }}>
