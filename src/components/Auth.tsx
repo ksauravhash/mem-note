@@ -6,11 +6,13 @@ export const AuthContext = createContext<{
   authValues?: AuthType;
   updateAuth: (authData: AuthType) => void;
   clearAuth: () => void;
+  authLoading: boolean;
 } | null>(null);
 const authStorageName = "auth";
 
 const Auth = ({ children }: { children?: ReactNode }) => {
   const [authValues, setAuthValues] = useState<AuthType>();
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
   const updateAuth = (authData: AuthType) => {
     localStorage.setItem(authStorageName, JSON.stringify(authData));
     setAuthValues(authData);
@@ -25,6 +27,7 @@ const Auth = ({ children }: { children?: ReactNode }) => {
   };
 
   useEffect(() => {
+    setAuthLoading(true);
     const authObString = localStorage.getItem(authStorageName);
     if (authObString) {
       const authOb: AuthType | undefined = JSON.parse(authObString);
@@ -55,10 +58,11 @@ const Auth = ({ children }: { children?: ReactNode }) => {
       } catch (err) {
         console.error(err);
       }
+      setAuthLoading(false);
     }
   }, []);
   return (
-    <AuthContext.Provider value={{ authValues, updateAuth, clearAuth }}>
+    <AuthContext.Provider value={{ authValues, updateAuth, clearAuth, authLoading }}>
       {children}
     </AuthContext.Provider>
   );
