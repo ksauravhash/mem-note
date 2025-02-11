@@ -19,26 +19,28 @@ type noteBlock = {
 
 type noteType = {
   title: string;
-  noteblocks: noteBlock[]
+  noteblocks: noteBlock[],
+  repetition: number;
+  easeFactor: number;
+  interval: number;
+  usedDate: Date;
+  previouslyUsed: boolean;
 }
 
 type notebookDataType = {
   _id: string;
   notes: noteType[];
   title: string;
+  streak: number;
 }
 
 const Note = () => {
   const params = useParams<noteParams>();
   const [notebookData, setNotebookData] = useState<notebookDataType>();
-  const navigation = useNavigate();
-
-  /**
-   * @todo To replace the dummy value with api response. 
-   */
-  const [streak, setStreak] = useState(5);
-  const [progress, setProgress] = useState(70);
+  const [progress, setProgress] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  
+  const navigation = useNavigate();
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -50,6 +52,12 @@ const Note = () => {
         id: params.noteId
       })).data as { notebook: notebookDataType }
       setNotebookData(data.notebook);
+      const usedNotesCount = data.notebook.notes.filter(e => e.previouslyUsed).length;
+      if (data.notebook.notes.length == 0) {
+        setProgress(100);
+      } else {
+        setProgress(Math.round(usedNotesCount / data.notebook.notes.length));
+      }
     } catch (err) {
       if (err instanceof axios.AxiosError) {
         if (err.response?.status == 400) {
@@ -76,7 +84,7 @@ const Note = () => {
             <CardContent>
               <Whatshot color="error" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Daily Streak</Typography>
-              <Typography variant="h4" color="error" sx={{ fontWeight: "bold" }}>{streak} 🔥</Typography>
+              <Typography variant="h4" color="error" sx={{ fontWeight: "bold" }}>{notebookData.streak} 🔥</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -115,7 +123,7 @@ const Note = () => {
         <AddIcon />
         Add a note
       </Fab>
-      <AddNoteForm showModal={showModal} handleClose={handleCloseModal} />
+      <AddNoteForm showModal={showModal} handleClose={handleCloseModal} notebookID={notebookData._id}/>
     </Container>
   )
 }
