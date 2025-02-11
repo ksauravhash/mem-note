@@ -1,9 +1,12 @@
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Container, Dialog, Fab, Paper, SelectChangeEvent, useMediaQuery, useTheme } from "@mui/material"
-import React, { useState } from "react";
+import { Button, Container, Dialog, Paper, SelectChangeEvent, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
+import React, { MouseEventHandler, useState } from "react";
 import SortableInput from "./SortableInput";
 import { Add as AddIcon } from "@mui/icons-material";
+import axiosInstance from "../utility/axiosInstance";
+import { AxiosError } from "axios";
+import { useNavigate } from "react-router";
 
 export type FormElement = {
   id: number;
@@ -13,8 +16,12 @@ export type FormElement = {
   answer: boolean;
 }
 
-const AddNoteForm = ({ showModal, handleClose }: { showModal: boolean, handleClose: () => void }) => {
+const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolean, handleClose: () => void, notebookID: string }) => {
   const [formElements, setFormElements] = useState<FormElement[]>([]);
+  const [title, setTitle] = useState<string>("");
+
+  const navigation = useNavigate();
+
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (over && active.id == over.id) return;
@@ -49,6 +56,27 @@ const AddNoteForm = ({ showModal, handleClose }: { showModal: boolean, handleClo
     handleClose();
   }
 
+  const handleSave: MouseEventHandler = async (e) => {
+    e.preventDefault();
+    try {
+      await axiosInstance.post('/note/create', {
+        title: title,
+        noteBlocks: formElements,
+        notebookID: notebookID
+      })
+      handleDialogClose();
+    } catch (err) {
+      if(err instanceof AxiosError) {
+        if(err.response && err.response?.status >= 500) {
+          navigation('/serverError');
+        }
+      }
+      else {
+        console.log(err);
+      }
+    }
+  }
+
   const theme = useTheme();
   const md = useMediaQuery(theme.breakpoints.down('md'));
   return (
@@ -57,31 +85,39 @@ const AddNoteForm = ({ showModal, handleClose }: { showModal: boolean, handleClo
         <Paper
           sx={{ p: 4, }}
         >
-          {/* Drag and Drop Context */}
-          <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-            <SortableContext items={formElements} strategy={verticalListSortingStrategy}>
-              {formElements.map((item) => (
-                <SortableInput key={item.id} {...item} handleInputChange={handleInputChange} />
-              ))}
-            </SortableContext>
-          </DndContext>
+          <form>
 
-          {/* Add Button */}
-          <Container sx={{ display: "flex", justifyContent: "center", }}>
-            <Fab
-              variant="extended"
-              onClick={handleAddButton}
-              sx={{
-                px: 3,
-                py: 1,
-              }}
-            >
-              <AddIcon sx={{ mr: 1 }} /> Add a Note Block
-            </Fab>
-          </Container>
+            <Typography variant="h3" sx={{ mb: 2 }}>Add a note</Typography>
+            <TextField sx={{ mb: 4 }} value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" required fullWidth />
+            {/* Drag and Drop Context */}
+            <Typography variant="h5" sx={{ mb: 2 }}>Noteblocks</Typography>
+
+            <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+              <SortableContext items={formElements} strategy={verticalListSortingStrategy}>
+                {formElements.map((item) => (
+                  <SortableInput key={item.id} {...item} handleInputChange={handleInputChange} />
+                ))}
+              </SortableContext>
+            </DndContext>
+
+            {/* Add Button */}
+            <Container sx={{ display: "flex", justifyContent: "center", }}>
+              <Button
+                variant="contained"
+                onClick={handleAddButton}
+                sx={{
+                  px: 3,
+                  py: 1,
+                }}
+              >
+                <AddIcon sx={{ mr: 1 }} /> Add a Note Block
+              </Button>
+              <Button variant="contained" size="large" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+            </Container>
+          </form>
         </Paper>
-      </Container>
-    </Dialog>
+      </Container >
+    </Dialog >
   )
 }
 
