@@ -4,7 +4,14 @@ import { Checkbox, FormControl, FormControlLabel, FormGroup, IconButton, InputLa
 import { CSS } from "@dnd-kit/utilities";
 import { Clear as ClearIcon, DragIndicator as DragIndicatorIcon } from "@mui/icons-material";
 
-const SortableInput = ({ id, content, type, handleInputChange }: FormElementType & { handleInputChange: (id: number, e: React.ChangeEvent<any>) => void }) => {
+const SortableInput = ({
+  id, content, type, answer, handleInputChange, handleCheckboxChange, handleRemoveButton
+}: FormElementType &
+  {
+    handleInputChange: (id: number, e: React.ChangeEvent<any>) => void,
+    handleCheckboxChange: (id: number, e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void,
+    handleRemoveButton: (id: number, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  }) => {
   const {
     attributes,
     listeners,
@@ -16,7 +23,7 @@ const SortableInput = ({ id, content, type, handleInputChange }: FormElementType
   return (
     <Paper ref={setNodeRef} sx={{ transform: CSS.Transform.toString(transform), transition, touchAction: 'none' }}>
       <ListItem secondaryAction={
-        <IconButton color="error">
+        <IconButton color="error" onClick={e => { handleRemoveButton(id, e) }}>
           <ClearIcon />
         </IconButton>
       }>
@@ -36,12 +43,23 @@ const SortableInput = ({ id, content, type, handleInputChange }: FormElementType
           </Select>
         </FormControl>
         <FormGroup sx={{ ml: 2 }}>
-          <FormControlLabel value={"true"} control={<Checkbox />} label="Answer" labelPlacement="end" />
+          <FormControlLabel
+            control={<Checkbox name="answer" value={`${answer}`}
+              onChange={(e, checked) => { handleCheckboxChange(id, e, checked) }} />}
+            label="Answer"
+            labelPlacement="end"
+          />
         </FormGroup>
       </ListItem>
       <ListItem>
         {type === "word" ? (
-          <TextField fullWidth placeholder='Enter something' name='content' value={content} onChange={(e) => { handleInputChange(id, e) }} />
+          <TextField
+            fullWidth
+            placeholder='Enter something'
+            name='content'
+            value={content}
+            onChange={(e) => { handleInputChange(id, e) }}
+          />
         ) : (
           <TextField
             multiline

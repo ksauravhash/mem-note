@@ -46,6 +46,18 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
     );
   }
 
+  const handleCheckboxChange = (id: number, e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setFormElements((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [e.target.name]: checked } : item))
+    );
+  }
+
+  const handleRemoveButton = (id: number, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setFormElements((prev) => (
+      prev.filter(item => item.id !== id)
+    ))
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(TouchSensor)
@@ -66,8 +78,8 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
       })
       handleDialogClose();
     } catch (err) {
-      if(err instanceof AxiosError) {
-        if(err.response && err.response?.status >= 500) {
+      if (err instanceof AxiosError) {
+        if (err.response && err.response?.status >= 500) {
           navigation('/serverError');
         }
       }
@@ -95,7 +107,12 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
             <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
               <SortableContext items={formElements} strategy={verticalListSortingStrategy}>
                 {formElements.map((item) => (
-                  <SortableInput key={item.id} {...item} handleInputChange={handleInputChange} />
+                  <SortableInput
+                    key={item.id} {...item}
+                    handleInputChange={handleInputChange}
+                    handleCheckboxChange={handleCheckboxChange}
+                    handleRemoveButton={handleRemoveButton}
+                  />
                 ))}
               </SortableContext>
             </DndContext>
