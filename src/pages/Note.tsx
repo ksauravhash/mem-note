@@ -1,20 +1,15 @@
-import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography, Fab } from "@mui/material"
+import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography, Fab, Link } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
 import { Notifications, Whatshot, BarChart, Add as AddIcon } from "@mui/icons-material";
 import axiosInstance from "../utility/axiosInstance"
 import axios from "axios"
 import AddNoteForm from "../components/AddNoteForm";
+import { Link as RouterLink } from 'react-router';
 
 
 type noteParams = {
   noteId: string
-}
-
-type noteBlock = {
-  type: NoteBlockType;
-  content: string;
-  sequenceNumber: number;
 }
 
 type noteType = {
@@ -39,7 +34,7 @@ const Note = () => {
   const [notebookData, setNotebookData] = useState<notebookDataType>();
   const [progress, setProgress] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  
+
   const navigation = useNavigate();
 
   const handleCloseModal = () => {
@@ -109,7 +104,9 @@ const Note = () => {
             <Notifications color="warning" fontSize="x-large" />
             <Typography variant="h6" sx={{ mt: 2 }}>Learning Reminder</Typography>
             <Typography variant="body1">Time to review your flashcards!</Typography>
-            <Button variant="contained" color="primary" sx={{ mt: 2 }}>Start Studying</Button>
+            <Link component={RouterLink} to={`/review/${params.noteId}`}>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }}>Start Studying</Button>
+            </Link>
           </CardContent>
           </Card>
         </Grid>
@@ -123,7 +120,7 @@ const Note = () => {
         <AddIcon />
         Add a note
       </Fab>
-      <AddNoteForm showModal={showModal} handleClose={handleCloseModal} notebookID={notebookData._id}/>
+      <AddNoteForm showModal={showModal} handleClose={handleCloseModal} notebookID={notebookData._id} />
     </Container>
   )
 }
