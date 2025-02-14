@@ -7,18 +7,37 @@ export const AuthContext = createContext<{
   updateAuth: (authData: AuthType) => void;
   clearAuth: () => void;
   authLoading: boolean;
+  tokenExpired: boolean;
 } | null>(null);
 const authStorageName = "auth";
+
 
 const Auth = ({ children }: { children?: ReactNode }) => {
   const [authValues, setAuthValues] = useState<AuthType>();
   const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const [tokenExpired, setTokenExpired] = useState<boolean>(false);
+  const [timerID, setTimerID] = useState<NodeJS.Timeout>();
   const updateAuth = (authData: AuthType) => {
     localStorage.setItem(authStorageName, JSON.stringify(authData));
-    setAuthValues(authData);
-    axiosInstance.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${authData?.accessToken}`;
+    const secondsNow = Math.floor(Date.now()) / 1000;
+    const accessTokenExpSeconds = jwtDecode(authData?.accessToken)?.exp;
+    if (
+      accessTokenExpSeconds &&
+      accessTokenExpSeconds - secondsNow > 0
+    ) {
+      const id = setTimeout(() => {
+        setTokenExpired(true);
+      }, (accessTokenExpSeconds - secondsNow)*1000)
+      if (timerID) {
+        clearTimeout(timerID);
+        setTimerID(id);
+      }
+      axiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${authData?.accessToken}`;
+      setAuthValues(authData);
+      setTokenExpired(false);
+    }
   };
 
   const clearAuth = () => {
@@ -44,15 +63,25 @@ const Auth = ({ children }: { children?: ReactNode }) => {
               accessTokenExpSeconds &&
               accessTokenExpSeconds - secondsNow > 0
             ) {
+              const id = setTimeout(() => {
+                setTokenExpired(true);
+              }, (accessTokenExpSeconds - secondsNow)*1000)
+              if (timerID) {
+                clearTimeout(timerID);
+                setTimerID(id);
+              }
               axiosInstance.defaults.headers.common[
                 "Authorization"
               ] = `Bearer ${authOb?.accessToken}`;
               setAuthValues(authOb);
+              setTokenExpired(false);
             } else {
               clearAuth();
+              setTokenExpired(false);
             }
           } else {
             clearAuth();
+            setTokenExpired(false);
           }
         }
       } catch (err) {
@@ -62,7 +91,7 @@ const Auth = ({ children }: { children?: ReactNode }) => {
     setAuthLoading(false);
   }, []);
   return (
-    <AuthContext.Provider value={{ authValues, updateAuth, clearAuth, authLoading }}>
+    <AuthContext.Provider value={{ authValues, updateAuth, clearAuth, authLoading, tokenExpired }}>
       {children}
     </AuthContext.Provider>
   );
