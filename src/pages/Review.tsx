@@ -21,68 +21,74 @@ type reviewNoteType = {
   count: number;
 }
 
+type statusType = {
+  currentSelection: number;
+  successList: number[];
+  failList: number[];
+  randomMovement: boolean;
+}
+
 const Review = () => {
   const [reviewData, setReviewData] = useState<reviewNoteType[]>([]);
-  const [currentSelection, setCurrentSelection] = useState(0);
-  const [successList, setSuccessList] = useState<number[]>([]);
-  const [failList, setFailList] = useState<number[]>([]);
-  const [randomMovement, setRandomMovement] = useState(false);
+  const [status, setStatus] = useState<statusType>({
+    currentSelection: 0,
+    successList: [],
+    failList: [],
+    randomMovement: false
+  });
   const [showAnswer, setShowAnswer] = useState(false);
   const [loading, setLoading] = useState(true);
   const params = useParams<reviewParams>();
   const navigation = useNavigate();
 
-  const goNext = () => {
-    let nextSelection = null;
-
-    if (!randomMovement) {
-      if (currentSelection + 1 < reviewData.length) {
-        nextSelection = currentSelection + 1;
-      } else {
-        setRandomMovement(true);
+  const goNext = async () => {
+    setStatus(prev=> {
+      const prevOb = {...prev};
+      let {currentSelection, failList, randomMovement, successList}= prevOb;
+      if(!randomMovement && currentSelection+1 < reviewData.length) {
+        prevOb.currentSelection++;
+        return prevOb; 
       }
-    }
+      if(!randomMovement && currentSelection == reviewData.length-1) {
+        prevOb.randomMovement=true;
+      }
+      if(failList.length > 0) {
+        prevOb.currentSelection = failList[0];
+        return prevOb;
+      }
+      if(successList.length > 0) {
+        prevOb.currentSelection = successList[0];
+        return prevOb;
+      }
+      setReviewData([]);
+      return prevOb;
 
-    if (nextSelection === null && failList.length > 0) {
-      nextSelection = failList[0];
-    }
-
-    if (nextSelection === null && successList.length > 0) {
-      nextSelection = successList[0];
-    }
-
-    if (nextSelection !== null) {
-      setCurrentSelection(nextSelection);
-    } else {
-      setTimeout(()=>{
-        setReviewData([]); // Only reset when there’s nothing left
-
-      }, 1000);
-    }
-  };
+    })
+  }
 
   const handleDifficultButton = async () => {
-    setFailList(prev => {
-      if (!prev.includes(currentSelection)) {
-        return [...prev, currentSelection];
-      } else {
-        return [...prev.slice(1), currentSelection]; // Remove first, push to the end
-      }
-    });
-  
-    setSuccessList(prev => prev.includes(currentSelection) ? prev.slice(1) : prev);
-  
+    setStatus(prev => {
+      const prevOb = { ...prev };
+      const { currentSelection, failList, successList } = prevOb;
+      if (successList.includes(currentSelection))
+        successList.shift();
+      if (failList.includes(currentSelection))
+        failList.shift();
+      failList.push(currentSelection);
+      return prevOb;
+    })
+
     try {
       await axiosInstance.patch('/note/iterateNote', {
         notebookID: params.notebookID,
-        noteID: reviewData[currentSelection]._id,
+        noteID: reviewData[status.currentSelection]._id,
         quality: 0
       });
-  
-      setReviewData(prev => prev.map((note, index) => 
-        index === currentSelection ? { ...note, count: 0 } : note
+
+      setReviewData(prev => prev.map((note, index) =>
+        index === status.currentSelection ? { ...note, count: 0 } : note
       ));
-  
+
       goNext(); // Move to next selection after state updates
     } catch (err) {
       if (err instanceof AxiosError && err.response && err.response?.status >= 500) {
@@ -94,31 +100,30 @@ const Review = () => {
   };
 
   const handleEasyButton = async () => {
-    if (failList.includes(currentSelection)) {
-      setFailList(prev => prev.slice(1)); // Remove first element (shorthand)
-    }
-
-    setSuccessList(prev=> {
-      let prev1 = [...prev];
-      if(successList.includes(currentSelection))
-        prev1 = prev1.slice(1)
-      if(reviewData[currentSelection].count < 2)
-        prev1 = [...prev1, currentSelection];
-      return prev1;
+    setStatus(prev => {
+      const prevOb = { ...prev };
+      const { currentSelection, failList, successList } = prevOb;
+      if (failList.includes(currentSelection))
+        failList.shift();
+      if (successList.includes(currentSelection))
+        successList.shift();
+      if (reviewData[currentSelection].count < 2)
+        successList.push(currentSelection);
+      return prevOb;
     })
 
     try {
-      if (reviewData[currentSelection].count >= 2) {
+      if (reviewData[status.currentSelection].count >= 2) {
         await axiosInstance.patch('/note/iterateNote', {
           notebookID: params.notebookID,
-          noteID: reviewData[currentSelection]._id,
+          noteID: reviewData[status.currentSelection]._id,
           quality: 4
         });
       } else {
         setReviewData(prev => {
           return prev.map((note, index) =>
-            index === currentSelection
-              ? { ...note, count: note.count + 1 }  // Create a new object instead of mutating
+            index === status.currentSelection
+              ? { ...note, count: note.count + 1 }
               : note
           );
         });
@@ -222,10 +227,10 @@ const Review = () => {
               }}
             >
               <Typography variant="subtitle2" gutterBottom>
-                {reviewData[currentSelection].title}
+                {reviewData[status.currentSelection].title}
               </Typography>
 
-              {reviewData[currentSelection].noteBlocks.map((block, index) => {
+              {reviewData[status.currentSelection].noteBlocks.map((block, index) => {
                 if (!block.answer) {
                   return returnBlockFrontend(block, index);
                 } else {
