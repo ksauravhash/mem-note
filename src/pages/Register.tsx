@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Container,
   TextField,
@@ -12,6 +12,7 @@ import { Link as RouterLink, useNavigate } from "react-router";
 import StyledPaper from "./StyledPaper";
 import axiosInstance from "../utility/axiosInstance";
 import axios from "axios";
+import { AlertContext } from "../components/AlertSystem";
 
 const RegisterPage = () => {
   const [registrationDetail, setRegistrationDetails] = useState({
@@ -31,6 +32,8 @@ const RegisterPage = () => {
   });
 
   const navigate = useNavigate();
+
+  const alertOb = useContext(AlertContext);
 
   const { username, email, password, confirmPassword, name } =
     registrationDetail;
@@ -129,6 +132,7 @@ const RegisterPage = () => {
         const { confirmPassword, ...payload } = registrationDetail;
         await axiosInstance.post("user/register", payload);
         navigate("/login");
+        alertOb?.pushAlert('You have successfully registered your account.', 'success');
       } catch (err) {
         if (axios.isAxiosError(err)) {
           if (err.status == 400) {

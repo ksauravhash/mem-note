@@ -13,6 +13,7 @@ import StyledPaper from "./StyledPaper";
 import axiosInstance from "../utility/axiosInstance";
 import axios from "axios";
 import { AuthContext } from "../components/Auth";
+import { AlertContext } from "../components/AlertSystem";
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>("");
@@ -24,6 +25,9 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const authValuesOb = useContext(AuthContext);
+
+  const alertOb = useContext(AlertContext);
+  
 
   const validateUsername = (username: string): boolean => {
     return !!username;
@@ -67,6 +71,7 @@ const LoginPage = () => {
         const loginData = loginResponse.data;
         authValuesOb?.updateAuth(loginData);
         navigate('/');
+        alertOb?.pushAlert('You have successfully logged in.', 'success');
       } catch (err) {
         if (axios.isAxiosError(err)) {
           if (err.response?.status == 401) {
