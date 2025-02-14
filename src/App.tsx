@@ -13,6 +13,7 @@ import Note from "./pages/Note";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Review from "./pages/Review";
 import AlertSystem from "./components/AlertSystem";
+import SessionExpired from "./pages/SessionExpired";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <AlertSystem>
           <BrowserRouter>
             <Routes>
+              <Route path="/sessionExpired" element={<SessionExpired />}></Route>
               <Route path="/" element={<Home />}>
                 <Route path="/login" element={<Login />}></Route>
                 <Route path="/register" element={<RegisterPage />}></Route>

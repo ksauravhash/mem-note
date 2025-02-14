@@ -14,6 +14,7 @@ import axiosInstance from "../utility/axiosInstance";
 import axios from "axios";
 import { AuthContext } from "../components/Auth";
 import { AlertContext } from "../components/AlertSystem";
+import Loading from "../components/Loading";
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>("");
@@ -84,6 +85,12 @@ const LoginPage = () => {
       }
     }
   };
+
+  if(authValuesOb?.authLoading)
+    return <Loading/>
+
+  if(authValuesOb?.authValues)
+      navigate('/');
 
   return (
     <Container

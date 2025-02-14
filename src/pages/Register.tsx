@@ -13,6 +13,8 @@ import StyledPaper from "./StyledPaper";
 import axiosInstance from "../utility/axiosInstance";
 import axios from "axios";
 import { AlertContext } from "../components/AlertSystem";
+import { AuthContext } from "../components/Auth";
+import Loading from "../components/Loading";
 
 const RegisterPage = () => {
   const [registrationDetail, setRegistrationDetails] = useState({
@@ -32,6 +34,7 @@ const RegisterPage = () => {
   });
 
   const navigate = useNavigate();
+  const authValuesOb = useContext(AuthContext);
 
   const alertOb = useContext(AlertContext);
 
@@ -154,128 +157,134 @@ const RegisterPage = () => {
     }));
   };
 
-  return (
-    <Container
-      maxWidth="sm"
-      sx={{
-        margin: 0,
-        marginLeft: "auto",
-        display: "flex",
-        justifyContent: "flex-end",
-      }}
-    >
-      <StyledPaper sx={{ margin: "auto" }}>
-        <Box mb={3}>
-          <Typography variant="h4" align="center" gutterBottom>
-            Register
-          </Typography>
-        </Box>
-        <form>
-          <Grid container spacing={2}>
-            {/* Name Input */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Name"
-                type="name"
-                name="name"
-                variant="outlined"
-                value={name}
-                onChange={handleChange}
-                error={!!nameError}
-                helperText={nameError}
-                required
-              />
-            </Grid>
-            {/* Username Input */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Username"
-                type="username"
-                name="username"
-                variant="outlined"
-                value={username}
-                onChange={handleChange}
-                error={!!usernameError}
-                helperText={usernameError}
-                required
-              />
-            </Grid>
-            {/* Email Input */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                name="email"
-                variant="outlined"
-                value={email}
-                onChange={handleChange}
-                error={!!emailError}
-                helperText={emailError}
-                required
-              />
-            </Grid>
+  if(authValuesOb?.authLoading)
+    return <Loading/>
 
-            {/* Password Input */}
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                name="password"
-                variant="outlined"
-                value={password}
-                onChange={handleChange}
-                error={!!passwordError}
-                helperText={passwordError}
-                required
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                name="confirmPassword"
-                variant="outlined"
-                value={confirmPassword}
-                onChange={handleChange}
-                error={!!confirmPasswordError}
-                helperText={confirmPasswordError}
-                required
-              />
-            </Grid>
-          </Grid>
+  if(authValuesOb?.authValues)
+      navigate('/');
 
-          {/* Register Button */}
-          <Box mt={3}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              size="large"
-              onClick={handleRegister}
-              type="submit"
-            >
+    return (
+      <Container
+        maxWidth="sm"
+        sx={{
+          margin: 0,
+          marginLeft: "auto",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <StyledPaper sx={{ margin: "auto" }}>
+          <Box mb={3}>
+            <Typography variant="h4" align="center" gutterBottom>
               Register
-            </Button>
-          </Box>
-
-          {/* Sign Up Link */}
-          <Box mt={2} textAlign="center">
-            <Typography variant="body2">
-              Already have an account?{" "}
-              <Link component={RouterLink} to={"/login"}>
-                Login
-              </Link>
             </Typography>
           </Box>
-        </form>
-      </StyledPaper>
-    </Container>
-  );
+          <form>
+            <Grid container spacing={2}>
+              {/* Name Input */}
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  type="name"
+                  name="name"
+                  variant="outlined"
+                  value={name}
+                  onChange={handleChange}
+                  error={!!nameError}
+                  helperText={nameError}
+                  required
+                />
+              </Grid>
+              {/* Username Input */}
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  type="username"
+                  name="username"
+                  variant="outlined"
+                  value={username}
+                  onChange={handleChange}
+                  error={!!usernameError}
+                  helperText={usernameError}
+                  required
+                />
+              </Grid>
+              {/* Email Input */}
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  name="email"
+                  variant="outlined"
+                  value={email}
+                  onChange={handleChange}
+                  error={!!emailError}
+                  helperText={emailError}
+                  required
+                />
+              </Grid>
+
+              {/* Password Input */}
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  name="password"
+                  variant="outlined"
+                  value={password}
+                  onChange={handleChange}
+                  error={!!passwordError}
+                  helperText={passwordError}
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Confirm Password"
+                  type="password"
+                  name="confirmPassword"
+                  variant="outlined"
+                  value={confirmPassword}
+                  onChange={handleChange}
+                  error={!!confirmPasswordError}
+                  helperText={confirmPasswordError}
+                  required
+                />
+              </Grid>
+            </Grid>
+
+            {/* Register Button */}
+            <Box mt={3}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={handleRegister}
+                type="submit"
+              >
+                Register
+              </Button>
+            </Box>
+
+            {/* Sign Up Link */}
+            <Box mt={2} textAlign="center">
+              <Typography variant="body2">
+                Already have an account?{" "}
+                <Link component={RouterLink} to={"/login"}>
+                  Login
+                </Link>
+              </Typography>
+            </Box>
+          </form>
+        </StyledPaper>
+      </Container>
+    );
 };
 
 export default RegisterPage;

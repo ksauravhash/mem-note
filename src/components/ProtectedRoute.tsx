@@ -13,7 +13,10 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (authValues?.authValues)
     return children;
 
+  if(authValues?.tokenExpired)
+    <Navigate to="/sessionExpired" />
 
-  return <Navigate to="/login" replace />;
+
+  return <Navigate to="/login" />;
 
 };
