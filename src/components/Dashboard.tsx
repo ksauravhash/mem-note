@@ -44,8 +44,8 @@ const Dashboard = () => {
     setShowDialog(false);
   };
 
-  const noteNavigationButtonClick = (noteID: string)=> {
-  navigate(`/note/${noteID}`);
+  const noteNavigationButtonClick = (noteID: string) => {
+    navigate(`/note/${noteID}`);
   }
 
   const handleAddActionButton: React.MouseEventHandler<
@@ -66,7 +66,7 @@ const Dashboard = () => {
       } catch (err) {
         console.error(err);
       }
-    }else {
+    } else {
       setTitleError("Name cannot be empty");
     }
   };
@@ -86,10 +86,23 @@ const Dashboard = () => {
         <Stack direction={"row"} spacing={2}>
           {recentNotebooks &&
             recentNotebooks.map((item) => (
-              <Link key={item.id} component={Button} onClick={()=>{noteNavigationButtonClick(item.id)}}>
+              <Link key={item.id} component={Button} onClick={() => { noteNavigationButtonClick(item.id) }}>
                 {item.title}
               </Link>
             ))}
+          {
+            recentNotebooks?.length == 0 &&
+            <Box>
+              <Typography>
+
+                There are no notebooks. Click on the &nbsp;
+                <Typography component="span" color="warning">
+                  ADD A NOTEBOOK &nbsp;
+                </Typography>
+                button to create a new one.
+              </Typography>
+            </Box>
+          }
         </Stack>
       </Container>
       <Fab
