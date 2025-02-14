@@ -1,12 +1,13 @@
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Button, Container, Dialog, Paper, SelectChangeEvent, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
-import React, { MouseEventHandler, useState } from "react";
+import React, { MouseEventHandler, useContext, useState } from "react";
 import SortableInput from "./SortableInput";
 import { Add as AddIcon } from "@mui/icons-material";
 import axiosInstance from "../utility/axiosInstance";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router";
+import { AlertContext } from "./AlertSystem";
 
 export type FormElement = {
   id: number;
@@ -21,6 +22,9 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
   const [title, setTitle] = useState<string>("");
 
   const navigation = useNavigate();
+
+  const alertOb = useContext(AlertContext);
+
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
@@ -77,6 +81,7 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
         notebookID: notebookID
       })
       handleDialogClose();
+      alertOb?.pushAlert('You have successfully added your note.', 'success');
     } catch (err) {
       if (err instanceof AxiosError) {
         if (err.response && err.response?.status >= 500) {
