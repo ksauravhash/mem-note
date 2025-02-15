@@ -40,8 +40,9 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
     });
   }
 
-  const handleAddButton: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleAddButton: React.MouseEventHandler<HTMLButtonElement> = (_) => {
     setFormElements((prev) => [...prev, { id: prev.length, content: '', type: 'word', sequenceNumber: prev.length, answer: false }]);
+    setTitle('');
   }
 
   const handleInputChange = (id: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
@@ -56,7 +57,7 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
     );
   }
 
-  const handleRemoveButton = (id: number, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleRemoveButton = (id: number, _: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setFormElements((prev) => (
       prev.filter(item => item.id !== id)
     ))
@@ -96,6 +97,7 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
 
   const theme = useTheme();
   const md = useMediaQuery(theme.breakpoints.down('md'));
+  const mobile = useMediaQuery(theme.breakpoints.down('sm'));
   return (
     <Dialog open={showModal} fullScreen={md} onClose={handleDialogClose}>
       <Container sx={{ p: 4 }}>
@@ -134,8 +136,15 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
               >
                 <AddIcon sx={{ mr: 1 }} /> Add a Note Block
               </Button>
-              <Button variant="contained" size="large" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+              {!mobile &&
+                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+              }
             </Container>
+            {mobile &&
+              <Container sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+              </Container>
+            }
           </form>
         </Paper>
       </Container >

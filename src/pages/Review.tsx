@@ -42,21 +42,21 @@ const Review = () => {
   const navigation = useNavigate();
 
   const goNext = async () => {
-    setStatus(prev=> {
-      const prevOb = {...prev};
-      let {currentSelection, failList, randomMovement, successList}= prevOb;
-      if(!randomMovement && currentSelection+1 < reviewData.length) {
+    setStatus(prev => {
+      const prevOb = { ...prev };
+      let { currentSelection, failList, randomMovement, successList } = prevOb;
+      if (!randomMovement && currentSelection + 1 < reviewData.length) {
         prevOb.currentSelection++;
-        return prevOb; 
+        return prevOb;
       }
-      if(!randomMovement && currentSelection == reviewData.length-1) {
-        prevOb.randomMovement=true;
+      if (!randomMovement && currentSelection == reviewData.length - 1) {
+        prevOb.randomMovement = true;
       }
-      if(failList.length > 0) {
+      if (failList.length > 0) {
         prevOb.currentSelection = failList[0];
         return prevOb;
       }
-      if(successList.length > 0) {
+      if (successList.length > 0) {
         prevOb.currentSelection = successList[0];
         return prevOb;
       }
@@ -204,12 +204,14 @@ const Review = () => {
     return <Loading />
 
   return (
-    <Container sx={{ p: 4, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Container sx={{ p: 4, pt: 6, display: "flex", flexDirection: "column" }}>
       <Typography variant="h2">
         Review
       </Typography>
       {reviewData.length === 0 ? (
-        <Typography textAlign="center">There is nothing in this notebook to be reviewed.</Typography>
+        <Container sx={{flexGrow: '1', display: 'flex', alignItems: 'center'}}>
+          <Typography textAlign="center">There is nothing in this notebook to be reviewed.</Typography>
+        </Container>
       ) : (
         <Grid container justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
           <Grid size={{ xs: 12, sm: 10, md: 8, lg: 6 }} sx={{ height: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>

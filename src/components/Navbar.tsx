@@ -35,6 +35,7 @@ const Navbar = () => {
 
   const logout = () => {
     authValuesOb?.clearAuth();
+    setDrawerOpen(false);
   };
 
   return (
@@ -75,12 +76,19 @@ const Navbar = () => {
               </ListItem>
             )}
             {navItems.map((item, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              </ListItem>
+              <Link
+                to={item.to}
+                key={index}
+                component={RouterLink}
+                underline="none"
+                color="textPrimary">
+                <ListItem disablePadding>
+                  <ListItemButton onClick={()=>setDrawerOpen(false)}>
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItemButton>
+                </ListItem>
+              </Link>
             ))}
           </List>
         </Grid>
