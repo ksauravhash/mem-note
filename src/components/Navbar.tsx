@@ -67,7 +67,7 @@ const Navbar = () => {
           <List>
             {authValuesOb?.authValues?.user && (
               <ListItem disablePadding>
-                <ListItemButton>
+                <ListItemButton disabled>
                   <ListItemIcon>
                     <UserIcon />
                   </ListItemIcon>
@@ -83,9 +83,9 @@ const Navbar = () => {
                 underline="none"
                 color="textPrimary">
                 <ListItem disablePadding>
-                  <ListItemButton onClick={()=>setDrawerOpen(false)}>
+                  <ListItemButton onClick={() => setDrawerOpen(false)}>
                     <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
+                    <ListItemText primary={item.text}/>
                   </ListItemButton>
                 </ListItem>
               </Link>
@@ -145,11 +145,13 @@ const Navbar = () => {
               {authValuesOb?.authValues && (
                 <ListItem disablePadding>
                   <ListItemButton
+                    disabled
                     sx={{
                       justifyContent: isCollapsed ? "center" : "flex-start",
                       px: isCollapsed ? 2 : 3,
                       height: 60,
-                    }}
+                    }
+                    }
                   >
                     <ListItemIcon
                       sx={{

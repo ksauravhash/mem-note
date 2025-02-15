@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Container,
-  Grid2 as Grid,
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router";
