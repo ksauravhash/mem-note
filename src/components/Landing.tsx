@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 
 const Landing = () => {
   const navigation = useNavigate();
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (_) => {
     navigation("/login");
   };
   return (
