@@ -2,14 +2,13 @@ import {
   Box,
   Button,
   Container,
-  Grid2 as Grid,
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 
 const Landing = () => {
   const navigation = useNavigate();
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (_) => {
     navigation("/login");
   };
   return (

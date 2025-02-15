@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import Navbar from "../components/Navbar";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../components/Auth";
