@@ -85,13 +85,13 @@ const Note = () => {
   if (!notebookData)
     return <></>
   return (
-    <Container sx={{ m: 4, mt: 6 }}>
+    <Container sx={{ p: 4, pt: 6 }}>
       <Typography color="textSecondary" variant="h4" sx={{ mb: 4, fontWeight: "bold" }}>{notebookData?.title}</Typography>
 
       <Grid container spacing={3}>
         {/* Daily Review */}
         <Grid size={{ xs: 12, sm: 6, md: 4 }} >
-          <Card sx={{ minHeight: '250px' }}>
+          <Card sx={{ minHeight: '210px' }}>
             <CardContent>
               <Whatshot color="error" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Daily Streak</Typography>
@@ -102,7 +102,7 @@ const Note = () => {
 
         {/* Performance Stats */}
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card sx={{ minHeight: '250px' }}>
+          <Card sx={{ minHeight: '210px' }}>
             <CardContent>
               <BarChart color="secondary" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Stats</Typography>
@@ -116,7 +116,7 @@ const Note = () => {
 
         {/* Study Reminder */}
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card sx={{ minHeight: '250px' }}><CardContent>
+          <Card sx={{ minHeight: '210px' }}><CardContent>
             <Notifications color="warning" fontSize="x-large" />
             <Typography variant="h6" sx={{ mt: 2 }}>Learning Reminder</Typography>
             <Typography variant="body1">Time to review your flashcards!</Typography>
