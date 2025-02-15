@@ -85,7 +85,7 @@ const Note = () => {
   if (!notebookData)
     return <></>
   return (
-    <Container sx={{ p: 4 }}>
+    <Container sx={{ m: 4, mt: 6 }}>
       <Typography color="textSecondary" variant="h4" sx={{ mb: 4, fontWeight: "bold" }}>{notebookData?.title}</Typography>
 
       <Grid container spacing={3}>
