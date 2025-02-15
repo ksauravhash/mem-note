@@ -26,7 +26,23 @@ type notebookDataType = {
   _id: string;
   notes: noteType[];
   title: string;
-  streak: number;
+  streakStart?: string;
+  lastStreak?: string;
+}
+
+const findStreakLength = (start?: string, end?: string) => {
+  if (!start)
+    return 0;
+  if (end) {
+    const startDate = new Date(start);
+    const endDate = new Date(start);
+    const diff = endDate.getTime() - startDate.getTime();
+    if (diff < 0)
+      return 0;
+    else
+      return Math.floor(diff / 60 / 60 / 24) + 1;
+  }
+  return 0;
 }
 
 const Note = () => {
@@ -51,7 +67,7 @@ const Note = () => {
       if (data.notebook.notes.length == 0) {
         setProgress(100);
       } else {
-        setProgress(Math.round(usedNotesCount / data.notebook.notes.length));
+        setProgress(Math.round(usedNotesCount * 100 / data.notebook.notes.length));
       }
     } catch (err) {
       if (err instanceof axios.AxiosError) {
@@ -79,7 +95,7 @@ const Note = () => {
             <CardContent>
               <Whatshot color="error" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Daily Streak</Typography>
-              <Typography variant="h4" color="error" sx={{ fontWeight: "bold" }}>{notebookData.streak} 🔥</Typography>
+              <Typography variant="h4" color="error" sx={{ fontWeight: "bold" }}>{findStreakLength(notebookData.streakStart, notebookData.lastStreak)} 🔥</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -90,7 +106,7 @@ const Note = () => {
             <CardContent>
               <BarChart color="secondary" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Stats</Typography>
-              <Typography variant="body1">Total Completion:
+              <Typography variant="body1">Total Completion: &nbsp;
                 <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
               </Typography>
               <LinearProgress variant="determinate" value={progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
