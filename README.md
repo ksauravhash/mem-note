@@ -1,50 +1,66 @@
-# React + TypeScript + Vite
+# MemNote
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MemNote is a web-based flashcard application designed as a better alternative to Anki. It aims to provide an intuitive and modern experience for efficient spaced repetition learning.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🖥️ **Web-Based**: Access your flashcards anywhere without needing to install an application.
+- ⚡ **Fast and Modern UI**: Built with React (Vite) and Material-UI (MUI) for a sleek and responsive interface.
+- 🔄 **Spaced Repetition**: Improve long-term retention with an intelligent review system.
+- 🔗 **Backend Integration**: Works with the `mem-note-backend` repository for data storage and synchronization.
+- 🔐 **User Authentication**: Secure login system to manage personalized study sessions.
+- 🌙 **Dark Mode Support**: A visually comfortable experience for night-time studying.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Frontend
+- [React](https://react.dev/) (Vite)
+- [TypeScript](https://www.typescriptlang.org/)
+- [MUI (Material-UI)](https://mui.com/)
 
-- Configure the top-level `parserOptions` property like this:
+### Backend
+- [`mem-note-backend`](https://github.com/ksauravhash/mem-note-backend) (Repository for backend services)
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Getting Started
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Prerequisites
+Make sure you have the following installed:
+- Node.js (v18+ recommended)
+- npm or yarn
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Installation
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/mem-note.git
+   cd mem-note
+   ```
+
+2. Install dependencies:
+   ```sh
+   npm install  # or yarn install
+   ```
+
+3. Start the development server:
+   ```sh
+   npm run dev  # or yarn dev
+   ```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## Backend Setup
+Ensure you have the backend running before using MemNote. Follow the setup guide in the [`mem-note-backend`](https://github.com/ksauravhash/mem-note-backend) repository.
+
+## Contributing
+
+Contributions are welcome! If you'd like to improve MemNote, feel free to submit a pull request or open an issue.
+
+## License
+
+MemNote is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for more details.
+
+## Contact
+
+For questions or suggestions, feel free to reach out via GitHub issues or discussions.
+
+
