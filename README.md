@@ -32,7 +32,7 @@ Make sure you have the following installed:
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/mem-note.git
+   git clone https://github.com/ksauravhash/mem-note.git
    cd mem-note
    ```
 
