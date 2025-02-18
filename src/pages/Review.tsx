@@ -209,7 +209,7 @@ const Review = () => {
         Review
       </Typography>
       {reviewData.length === 0 ? (
-        <Container sx={{flexGrow: '1', display: 'flex', alignItems: 'center'}}>
+        <Container sx={{flexGrow: '1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
           <Typography textAlign="center">There is nothing in this notebook to be reviewed.</Typography>
         </Container>
       ) : (

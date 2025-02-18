@@ -76,8 +76,8 @@ const Dashboard = () => {
   }, []);
   return (
     <Box margin={4}>
-      <Container sx={{ marginBottom: 4 }}>
-        <Typography variant="h1">Notebooks</Typography>
+      <Container sx={{ marginBottom: '1.5rem' }}>
+        <Typography variant="h1" sx={{fontWeight: "bold"}}>Notebooks</Typography>
       </Container>
       <Container>
         <Typography variant="h2" marginBottom={2}>
