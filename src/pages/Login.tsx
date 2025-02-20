@@ -8,13 +8,15 @@ import {
   Grid2 as Grid,
   Link,
 } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router";
+import { Link as RouterLink, useNavigate, useSearchParams } from "react-router";
 import StyledPaper from "./StyledPaper";
 import axiosInstance from "../utility/axiosInstance";
 import axios from "axios";
 import { AuthContext } from "../components/Auth";
 import { AlertContext } from "../components/AlertSystem";
 import Loading from "../components/Loading";
+import { jwtDecode } from "jwt-decode";
+import { Google as GoogleIcon } from "@mui/icons-material";
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>("");
@@ -25,7 +27,18 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
 
+  const [searchParam, _] = useSearchParams();
+
   const authValuesOb = useContext(AuthContext);
+
+  const accessToken = searchParam.get('at');
+  const refreshToken = searchParam.get('rt');
+
+  if(accessToken && refreshToken) {
+    const t = jwtDecode(accessToken) as {id: string; username: string; name: string};
+    authValuesOb?.updateAuth({accessToken , refreshToken, user: t})
+  }
+
 
   const alertOb = useContext(AlertContext);
   
@@ -85,6 +98,10 @@ const LoginPage = () => {
       }
     }
   };
+
+  const handleGoogleLogin = ()=> {
+    window.location.replace(`${import.meta.env.VITE_API_BASE_URL}/user/login/google`);
+  }
 
   if(authValuesOb?.authLoading)
     return <Loading/>
@@ -161,6 +178,18 @@ const LoginPage = () => {
               type="submit"
             >
               Login
+            </Button>
+          </Box>
+          <Box mt={3}>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              size="large"
+              onClick={handleGoogleLogin}
+              startIcon={<GoogleIcon/>}
+            >
+              Google Login
             </Button>
           </Box>
 
