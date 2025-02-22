@@ -20,7 +20,7 @@ export type FormElement = {
 const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolean, handleClose: () => void, notebookID: string }) => {
   const [formElements, setFormElements] = useState<FormElement[]>([]);
   const [title, setTitle] = useState<string>("");
-
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigate();
 
   const alertOb = useContext(AlertContext);
@@ -42,7 +42,6 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
 
   const handleAddButton: React.MouseEventHandler<HTMLButtonElement> = (_) => {
     setFormElements((prev) => [...prev, { id: prev.length, content: '', type: 'word', sequenceNumber: prev.length, answer: false }]);
-    setTitle('');
   }
 
   const handleInputChange = (id: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
@@ -70,11 +69,13 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
 
   const handleDialogClose = () => {
     setFormElements([]);
+    setTitle('');
     handleClose();
   }
 
   const handleSave: MouseEventHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await axiosInstance.post('/note/create', {
         title: title,
@@ -93,6 +94,7 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
         console.log(err);
       }
     }
+    setLoading(false);
   }
 
   const theme = useTheme();
@@ -137,12 +139,12 @@ const AddNoteForm = ({ showModal, handleClose, notebookID }: { showModal: boolea
                 <AddIcon sx={{ mr: 1 }} /> Add a Note Block
               </Button>
               {!mobile &&
-                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit" disabled={loading}>{loading ? 'Loading...' : 'Save'}</Button>
               }
             </Container>
             {mobile &&
               <Container sx={{ display: "flex", justifyContent: "center", my: 2 }}>
-                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit">Save</Button>
+                <Button variant="contained" sx={{ ml: 2 }} onClick={handleSave} type="submit" disabled={loading}>{loading ? 'Loading...' : 'Save'}</Button>
               </Container>
             }
           </form>

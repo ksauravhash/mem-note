@@ -106,10 +106,15 @@ const Note = () => {
             <CardContent>
               <BarChart color="secondary" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Stats</Typography>
-              <Typography variant="body1">Total Completion: &nbsp;
-                <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
-              </Typography>
-              <LinearProgress variant="determinate" value={progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
+              {
+                notebookData.notes.length > 0 ? <>
+
+                  <Typography variant="body1">Total Completion: &nbsp;
+                    <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
+                  </Typography>
+                  <LinearProgress variant="determinate" value={progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
+                </> : <Typography variant="body1">No notes available</Typography>
+              }
             </CardContent>
           </Card>
         </Grid>

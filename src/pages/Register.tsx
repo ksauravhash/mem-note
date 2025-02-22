@@ -33,6 +33,8 @@ const RegisterPage = () => {
     nameError: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const authValuesOb = useContext(AuthContext);
 
@@ -77,7 +79,8 @@ const RegisterPage = () => {
       confirmPasswordError: "",
       nameError: "",
     };
-
+    setError(errorOb);
+    setLoading(true);
     // Username validation
     if (!username) {
       errorOb.usernameError = "Username is required";
@@ -148,11 +151,15 @@ const RegisterPage = () => {
         if (axios.isAxiosError(err)) {
           if (err.status == 400) {
             navigate("/");
+          } else if (err.status == 409) {
+            const errData = err.response?.data as { type: string; message: string };
+            setError(prev => ({ ...prev, [`${errData.type}Error`]: errData.message }));
           } else if (err.status && err.status >= 500 && err.status < 600) {
             navigate("/serverError");
           }
         }
       }
+      setLoading(false);
     }
   };
 
@@ -216,6 +223,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 error={!!usernameError}
                 helperText={usernameError}
+                autoComplete="username"
                 required
               />
             </Grid>
@@ -231,6 +239,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 error={!!emailError}
                 helperText={emailError}
+                autoComplete="email"
                 required
               />
             </Grid>
@@ -247,6 +256,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 error={!!passwordError}
                 helperText={passwordError}
+                autoComplete="new-password"
                 required
               />
             </Grid>
@@ -275,8 +285,9 @@ const RegisterPage = () => {
               size="large"
               onClick={handleRegister}
               type="submit"
+              disabled={loading}
             >
-              Register
+              {loading? "Loading..." : "Register"}
             </Button>
           </Box>
 

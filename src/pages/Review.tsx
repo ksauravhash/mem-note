@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, CardMedia, Container, Grid2 as Grid, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, CardMedia, Container, Grid2 as Grid, Typography, Slide } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router"
 import axiosInstance from "../utility/axiosInstance";
@@ -38,6 +38,7 @@ const Review = () => {
   });
   const [showAnswer, setShowAnswer] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [appear, setAppear] = useState(true);
   const params = useParams<reviewParams>();
   const navigation = useNavigate();
 
@@ -64,9 +65,11 @@ const Review = () => {
       return prevOb;
 
     })
+    setTimeout(() => setAppear(true), 200);
   }
 
   const handleDifficultButton = async () => {
+    setAppear(false);
     setStatus(prev => {
       const prevOb = { ...prev };
       const { currentSelection, failList, successList } = prevOb;
@@ -100,6 +103,7 @@ const Review = () => {
   };
 
   const handleEasyButton = async () => {
+    setAppear(false);
     setStatus(prev => {
       const prevOb = { ...prev };
       const { currentSelection, failList, successList } = prevOb;
@@ -209,48 +213,49 @@ const Review = () => {
         Review
       </Typography>
       {reviewData.length === 0 ? (
-        <Container sx={{flexGrow: '1', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <Container sx={{ flexGrow: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Typography textAlign="center">There is nothing in this notebook to be reviewed.</Typography>
         </Container>
       ) : (
         <Grid container justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
           <Grid size={{ xs: 12, sm: 10, md: 8, lg: 6 }} sx={{ height: "auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <Card
-              variant="outlined"
-              sx={{
-                margin: "auto",
-                width: "100%",
-                maxWidth: 500,
-                p: 3,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="subtitle2" gutterBottom>
-                {reviewData[status.currentSelection].title}
-              </Typography>
+            <Slide direction="right" in={appear}>
+              <Card
+                variant="outlined"
+                sx={{
+                  margin: "auto",
+                  width: "100%",
+                  maxWidth: 500,
+                  p: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography variant="subtitle2" gutterBottom>
+                  {reviewData[status.currentSelection].title}
+                </Typography>
 
-              {reviewData[status.currentSelection].noteBlocks.map((block, index) => {
-                if (!block.answer) {
-                  return returnBlockFrontend(block, index);
-                } else {
-                  return (
-                    <Box key={index} sx={{ opacity: showAnswer ? 1 : 0, transition: "opacity 0.3s ease-in-out" }}>
-                      {returnBlockFrontend(block, index)}
-                    </Box>
-                  );
-                }
-              })}
+                {reviewData[status.currentSelection].noteBlocks.map((block, index) => {
+                  if (!block.answer) {
+                    return returnBlockFrontend(block, index);
+                  } else {
+                    return (
+                      <Box key={index} sx={{ opacity: showAnswer ? 1 : 0, transition: "opacity 0.3s ease-in-out" }}>
+                        {returnBlockFrontend(block, index)}
+                      </Box>
+                    );
+                  }
+                })}
 
-              <CardContent sx={{ width: "100%", textAlign: "center", pb: "0!important" }}>
-                <Button variant="contained" onClick={() => setShowAnswer((prev) => !prev)}>
-                  {showAnswer ? "Hide Answer" : "Show Answer"}
-                </Button>
-              </CardContent>
-            </Card>
-
+                <CardContent sx={{ width: "100%", textAlign: "center", pb: "0!important" }}>
+                  <Button variant="contained" onClick={() => setShowAnswer((prev) => !prev)}>
+                    {showAnswer ? "Hide Answer" : "Show Answer"}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Slide>
             <Grid container spacing={2} sx={{ maxWidth: 500, mt: 2 }}>
               <Grid>
                 <Button color="error" onClick={handleDifficultButton}>
