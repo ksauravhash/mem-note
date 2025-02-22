@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
+  const [addNotebookLoading, setAddNotebookLoading] = useState(false);
   const navigate = useNavigate();
   const updateRecentNotebooks = async () => {
     const notebooks = (await axiosInstance.get("/notebook/getRecentNotebooks"))
@@ -51,6 +52,7 @@ const Dashboard = () => {
   const handleAddActionButton: React.MouseEventHandler<
     HTMLButtonElement
   > = async () => {
+    setAddNotebookLoading(true);
     if (title) {
       try {
         const resp = await axiosInstance.post("/notebook/create", {
@@ -69,6 +71,7 @@ const Dashboard = () => {
     } else {
       setTitleError("Name cannot be empty");
     }
+    setAddNotebookLoading(false);
   };
 
   useEffect(() => {
@@ -77,7 +80,7 @@ const Dashboard = () => {
   return (
     <Box margin={4}>
       <Container sx={{ marginBottom: '1.5rem' }}>
-        <Typography variant="h1" sx={{fontWeight: "bold"}}>Notebooks</Typography>
+        <Typography variant="h1" sx={{ fontWeight: "bold" }}>Notebooks</Typography>
       </Container>
       <Container>
         <Typography variant="h2" marginBottom={2}>
@@ -143,8 +146,8 @@ const Dashboard = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleAddCancel}>Cancel</Button>
-          <Button variant="contained" onClick={handleAddActionButton} type="submit">
-            Add
+          <Button variant="contained" onClick={handleAddActionButton} type="submit" disabled={addNotebookLoading}>
+            {addNotebookLoading ? 'Loading...' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
