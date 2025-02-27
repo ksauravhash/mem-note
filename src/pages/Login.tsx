@@ -35,8 +35,8 @@ const LoginPage = () => {
   const refreshToken = searchParam.get('rt');
 
   if(accessToken && refreshToken) {
-    const t = jwtDecode(accessToken) as {id: string; username: string; name: string};
-    authValuesOb?.updateAuth({accessToken , refreshToken, user: t})
+    const decodedUser = jwtDecode(accessToken) as {id: string; username: string; name: string, email: string};
+    authValuesOb?.updateAuth({accessToken , refreshToken, user: decodedUser})
   }
 
 
