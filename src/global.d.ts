@@ -8,8 +8,9 @@ declare global {
             id: string;
             name: string;
             username: string;
+            email: string;
+            verified?: boolean;
         },
-        verified?: boolean;
     }
     type NoteBlockType = "word" | "description" | "image" | "audio";
 

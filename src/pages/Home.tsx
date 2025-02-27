@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
 import Navbar from "../components/Navbar";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../components/Auth";
@@ -9,12 +9,27 @@ import Dashboard from "../components/Dashboard";
 const Home = () => {
   const authValuesOb = useContext(AuthContext);
   const locationObject = useLocation();
-  const navigation = useNavigate();
-  useEffect(()=> {
-    if (authValuesOb?.tokenExpired) {
-       navigation('/sessionExpired');
+  const navigate = useNavigate();
+
+  const isVerifyPath = matchPath('/verify/*', locationObject.pathname);
+  useEffect(() => {
+    if (!authValuesOb || !authValuesOb.authValues) return;
+    if (authValuesOb) {
+      if (authValuesOb.tokenExpired) {
+        navigate('/sessionExpired');
+      }
+      else if (!isVerifyPath && authValuesOb.authValues && !authValuesOb.authValues.user.verified) {
+        navigate("/registerVerification", {
+          state: {
+            regDetails: {
+              username: authValuesOb.authValues.user.username,
+              email: authValuesOb.authValues.user.email
+            }
+          }
+        });
+      }
     }
-  },[authValuesOb?.tokenExpired])
+  }, [authValuesOb])
   return (
     <Box sx={{ display: "flex" }}>
       <Navbar />
