@@ -12,15 +12,15 @@ type noteParams = {
   noteId: string
 }
 
-type noteType = {
-  title: string;
-  noteblocks: noteBlock[],
-  repetition: number;
-  easeFactor: number;
-  interval: number;
-  usedDate: Date;
-  previouslyUsed: boolean;
-}
+// type noteType = {
+//   title: string;
+//   noteblocks: noteBlock[],
+//   repetition: number;
+//   easeFactor: number;
+//   interval: number;
+//   usedDate: Date;
+//   previouslyUsed: boolean;
+// }
 
 type notebookDataType = {
   _id: string;
