@@ -12,22 +12,27 @@ type noteParams = {
   noteId: string
 }
 
-type noteType = {
-  title: string;
-  noteblocks: noteBlock[],
-  repetition: number;
-  easeFactor: number;
-  interval: number;
-  usedDate: Date;
-  previouslyUsed: boolean;
-}
+// type noteType = {
+//   title: string;
+//   noteblocks: noteBlock[],
+//   repetition: number;
+//   easeFactor: number;
+//   interval: number;
+//   usedDate: Date;
+//   previouslyUsed: boolean;
+// }
 
 type notebookDataType = {
   _id: string;
-  notes: noteType[];
   title: string;
   streakStart?: string;
   lastStreak?: string;
+}
+
+type noteStatsType = {
+  notesCount: number;
+  usedNotesCount: number,
+  progress: number;
 }
 
 const findStreakLength = (start?: string, end?: string) => {
@@ -48,7 +53,7 @@ const findStreakLength = (start?: string, end?: string) => {
 const Note = () => {
   const params = useParams<noteParams>();
   const [notebookData, setNotebookData] = useState<notebookDataType>();
-  const [progress, setProgress] = useState(0);
+  const [stats, setStats] = useState<noteStatsType>({ notesCount: 0, usedNotesCount: 0, progress: 0 });
   const [showModal, setShowModal] = useState(false);
 
   const navigation = useNavigate();
@@ -59,16 +64,22 @@ const Note = () => {
 
   const getNotebook = async () => {
     try {
-      const data = (await axiosInstance.post('/notebook/getNotebook', {
+      const data = (await axiosInstance.post('/notebook/getNotbookWithStats', {
         id: params.noteId
-      })).data as { notebook: notebookDataType }
-      setNotebookData(data.notebook);
-      const usedNotesCount = data.notebook.notes.filter(e => e.previouslyUsed).length;
-      if (data.notebook.notes.length == 0) {
-        setProgress(100);
-      } else {
-        setProgress(Math.round(usedNotesCount * 100 / data.notebook.notes.length));
+      })).data as {
+        notebook: notebookDataType, notesCount: number;
+        usedNotesCount: number,
       }
+      setNotebookData(data.notebook);
+      setStats(prev => {
+        const ob = { ...prev, notesCount: data.notesCount, usedNotesCount: data.usedNotesCount };
+        if (data.notesCount == 0) {
+          ob.progress = 100;
+        } else {
+          ob.progress = (Math.round(data.usedNotesCount * 100 / data.notesCount));
+        }
+        return ob;
+      })
     } catch (err) {
       if (err instanceof axios.AxiosError) {
         if (err.response?.status == 400) {
@@ -107,12 +118,12 @@ const Note = () => {
               <BarChart color="secondary" fontSize="x-large" />
               <Typography variant="h6" sx={{ mt: 2 }}>Stats</Typography>
               {
-                notebookData.notes.length > 0 ? <>
+                stats.notesCount > 0 ? <>
 
                   <Typography variant="body1">Total Completion: &nbsp;
-                    <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{progress}%</Typography>
+                    <Typography component={'span'} color="secondary" style={{ fontWeight: "bold" }}>{stats.progress}%</Typography>
                   </Typography>
-                  <LinearProgress variant="determinate" value={progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
+                  <LinearProgress variant="determinate" value={stats.progress} color="primary" sx={{ mt: 2, bgcolor: "#333", height: 10, borderRadius: 5 }} />
                 </> : <Typography variant="body1">No notes available</Typography>
               }
             </CardContent>
