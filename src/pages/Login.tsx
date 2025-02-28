@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Container,
   TextField,
@@ -34,14 +34,14 @@ const LoginPage = () => {
   const accessToken = searchParam.get('at');
   const refreshToken = searchParam.get('rt');
 
-  if(accessToken && refreshToken) {
-    const decodedUser = jwtDecode(accessToken) as {id: string; username: string; name: string, email: string};
-    authValuesOb?.updateAuth({accessToken , refreshToken, user: decodedUser})
+  if (accessToken && refreshToken) {
+    const decodedUser = jwtDecode(accessToken) as { id: string; username: string; name: string, email: string };
+    authValuesOb?.updateAuth({ accessToken, refreshToken, user: decodedUser })
   }
 
 
   const alertOb = useContext(AlertContext);
-  
+
 
   const validateUsername = (username: string): boolean => {
     return !!username;
@@ -99,15 +99,18 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleLogin = ()=> {
+  const handleGoogleLogin = () => {
     window.location.replace(`${import.meta.env.VITE_API_BASE_URL}/user/login/google`);
   }
 
-  if(authValuesOb?.authLoading)
-    return <Loading/>
+  if (authValuesOb?.authLoading)
+    return <Loading />
 
-  if(authValuesOb?.authValues)
+  useEffect(() => {
+    if (authValuesOb?.authValues)
       navigate('/');
+  }, [])
+
 
   return (
     <Container
@@ -159,13 +162,13 @@ const LoginPage = () => {
           </Grid>
 
           {/* Server Error Message */}
-           
-            <Box mt={2} textAlign="center">
-              <Typography variant="body2" color="error">
-                {serverError}
-              </Typography>
-            </Box>
-          
+
+          <Box mt={2} textAlign="center">
+            <Typography variant="body2" color="error">
+              {serverError}
+            </Typography>
+          </Box>
+
 
           {/* Login Button */}
           <Box mt={3}>
@@ -187,7 +190,7 @@ const LoginPage = () => {
               color="secondary"
               size="large"
               onClick={handleGoogleLogin}
-              startIcon={<GoogleIcon/>}
+              startIcon={<GoogleIcon />}
             >
               Google Login
             </Button>
