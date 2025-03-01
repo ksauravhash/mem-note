@@ -103,14 +103,13 @@ const LoginPage = () => {
     window.location.replace(`${import.meta.env.VITE_API_BASE_URL}/user/login/google`);
   }
 
-  if (authValuesOb?.authLoading)
-    return <Loading />
-
   useEffect(() => {
     if (authValuesOb?.authValues)
       navigate('/');
-  }, [])
-
+  }, [authValuesOb?.authValues]);
+  
+  if (authValuesOb?.authLoading) 
+    return <Loading />;
 
   return (
     <Container
