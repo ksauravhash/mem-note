@@ -1,11 +1,12 @@
-import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography, Fab, Link } from "@mui/material"
+import { Button, Card, Grid2 as Grid, CardContent, Container, LinearProgress, Typography, Fab, Link, Box, useTheme, useMediaQuery } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router"
-import { Notifications, Whatshot, BarChart, Add as AddIcon } from "@mui/icons-material";
+import { Notifications, Whatshot, BarChart, Add as AddIcon, Settings as SettingsIcon } from "@mui/icons-material";
 import axiosInstance from "../utility/axiosInstance"
 import axios from "axios"
 import AddNoteForm from "../components/AddNoteForm";
 import { Link as RouterLink } from 'react-router';
+import NotebookSettings from "../components/NotebookSettings";
 
 
 type noteParams = {
@@ -55,11 +56,19 @@ const Note = () => {
   const [notebookData, setNotebookData] = useState<notebookDataType>();
   const [stats, setStats] = useState<noteStatsType>({ notesCount: 0, usedNotesCount: 0, progress: 0 });
   const [showModal, setShowModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const navigation = useNavigate();
 
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.down('md'));
+
   const handleCloseModal = () => {
     setShowModal(false);
+  }
+
+  const handleCloseSettingsModal = ()=> {
+    setShowSettingsModal(false);
   }
 
   const getNotebook = async () => {
@@ -143,16 +152,27 @@ const Note = () => {
           </Card>
         </Grid>
       </Grid>
-      <Fab variant="extended" size="large" sx={{
+      <Box sx={{
         position: "fixed",
         right: '1rem',
         bottom: '1rem'
-      }}
-        onClick={() => { setShowModal(true) }}>
-        <AddIcon />
-        Add a note
-      </Fab>
+      }}>
+        <Fab variant={!md ? 'extended' : 'circular'} size="large"
+          sx={{
+            mr: 2
+          }}
+          onClick={() => { setShowModal(true) }}>
+          <AddIcon />
+          {!md && "Add a note"}
+        </Fab>
+        <Fab variant={!md ? 'extended' : 'circular'} size="large"
+          onClick={() => { setShowSettingsModal(true) }}>
+          <SettingsIcon />
+          {!md && "Settings"}
+        </Fab>
+      </Box>
       <AddNoteForm showModal={showModal} handleClose={handleCloseModal} notebookID={notebookData._id} />
+      <NotebookSettings showModal={showSettingsModal} handleClose={handleCloseSettingsModal} notebookID={notebookData._id} title={notebookData.title}/>
     </Container>
   )
 }
