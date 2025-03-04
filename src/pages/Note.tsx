@@ -13,16 +13,6 @@ type noteParams = {
   noteId: string
 }
 
-// type noteType = {
-//   title: string;
-//   noteblocks: noteBlock[],
-//   repetition: number;
-//   easeFactor: number;
-//   interval: number;
-//   usedDate: Date;
-//   previouslyUsed: boolean;
-// }
-
 type notebookDataType = {
   _id: string;
   title: string;
@@ -67,7 +57,7 @@ const Note = () => {
     setShowModal(false);
   }
 
-  const handleCloseSettingsModal = ()=> {
+  const handleCloseSettingsModal = () => {
     setShowSettingsModal(false);
   }
 
@@ -152,6 +142,9 @@ const Note = () => {
           </Card>
         </Grid>
       </Grid>
+      <Link component={RouterLink} to={`/notelist/${params.noteId}`}>
+        <Button variant="contained" sx={{ mt: 2 }}>See all notes</Button>
+      </Link>
       <Box sx={{
         position: "fixed",
         right: '1rem',
@@ -172,7 +165,7 @@ const Note = () => {
         </Fab>
       </Box>
       <AddNoteForm showModal={showModal} handleClose={handleCloseModal} notebookID={notebookData._id} />
-      <NotebookSettings showModal={showSettingsModal} handleClose={handleCloseSettingsModal} notebookID={notebookData._id} title={notebookData.title}/>
+      <NotebookSettings showModal={showSettingsModal} handleClose={handleCloseSettingsModal} notebookID={notebookData._id} title={notebookData.title} />
     </Container>
   )
 }
