@@ -16,6 +16,7 @@ import AlertSystem from "./components/AlertSystem";
 import SessionExpired from "./pages/SessionExpired";
 import RegisterVerification from "./pages/RegisterVerification";
 import VerifyAccount from "./pages/VerifyAccount";
+import NotesList from "./pages/NotesList";
 
 function App() {
   return (
@@ -34,7 +35,8 @@ function App() {
                 <Route path="/note/:noteId" element={<ProtectedRoute><Note /></ProtectedRoute>}></Route>
                 <Route path="/review/:notebookID" element={<ProtectedRoute><Review /></ProtectedRoute>}></Route>
                 <Route path="/registerVerification" element={<RegisterVerification />}></Route>
-                <Route path="/verify/:uniqueToken" element={<VerifyAccount/>}></Route>
+                <Route path="/verify/:uniqueToken" element={<VerifyAccount />}></Route>
+                <Route path="/noteList/:notebookID" element={<ProtectedRoute><NotesList /></ProtectedRoute>}></Route>
               </Route>
               <Route path="/*" element={<NotFound />}></Route>
             </Routes>
