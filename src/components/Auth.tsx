@@ -4,7 +4,7 @@ import axiosInstance from "../utility/axiosInstance";
 
 export const AuthContext = createContext<{
   authValues?: AuthType;
-  updateAuth: (authData: AuthType) => void;
+  updateAuth: (authData: AuthType & {remember: boolean}) => void;
   clearAuth: () => void;
   authLoading: boolean;
   tokenExpired: boolean;
@@ -17,8 +17,11 @@ const Auth = ({ children }: { children?: ReactNode }) => {
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [tokenExpired, setTokenExpired] = useState<boolean>(false);
   const [timerID, setTimerID] = useState<NodeJS.Timeout>();
-  const updateAuth = (authData: AuthType) => {
-    localStorage.setItem(authStorageName, JSON.stringify(authData));
+  const updateAuth = (authData: AuthType & {remember: boolean}) => {
+    if(authData.remember)
+      localStorage.setItem(authStorageName, JSON.stringify(authData));
+    else
+      sessionStorage.setItem(authStorageName, JSON.stringify(authData));
     const secondsNow = Math.floor(Date.now()) / 1000;
     const accessTokenExpSeconds = jwtDecode(authData?.accessToken)?.exp;
     if (
@@ -42,12 +45,14 @@ const Auth = ({ children }: { children?: ReactNode }) => {
 
   const clearAuth = () => {
     localStorage.removeItem(authStorageName);
+    sessionStorage.removeItem(authStorageName);
     setAuthValues(undefined);
   };
 
   useEffect(() => {
     setAuthLoading(true);
-    const authObString = localStorage.getItem(authStorageName);
+    const authObString = localStorage.getItem(authStorageName) || sessionStorage.getItem(authStorageName);
+    
     if (authObString) {
       const authOb: AuthType | undefined = JSON.parse(authObString);
       try {
