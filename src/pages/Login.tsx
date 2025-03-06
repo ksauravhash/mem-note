@@ -7,6 +7,8 @@ import {
   Typography,
   Grid2 as Grid,
   Link,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate, useSearchParams } from "react-router";
 import StyledPaper from "./StyledPaper";
@@ -23,6 +25,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState<string>("");
   const [usernameError, setUsernameError] = useState<string>("");
   const [passwordError, setPasswordError] = useState<string>("");
+  const [remember, setRemember] = useState(false);
   const [serverError, setServerError] = useState<string>("");
 
   const navigate = useNavigate();
@@ -34,10 +37,6 @@ const LoginPage = () => {
   const accessToken = searchParam.get('at');
   const refreshToken = searchParam.get('rt');
 
-  if (accessToken && refreshToken) {
-    const decodedUser = jwtDecode(accessToken) as { id: string; username: string; name: string, email: string };
-    authValuesOb?.updateAuth({ accessToken, refreshToken, user: decodedUser })
-  }
 
 
   const alertOb = useContext(AlertContext);
@@ -82,7 +81,7 @@ const LoginPage = () => {
       try {
         const payload = { username, password };
         const loginResponse = await axiosInstance.post("user/login", payload);
-        const loginData = loginResponse.data;
+        const loginData = {...loginResponse.data, remember};
         authValuesOb?.updateAuth(loginData);
         navigate('/');
         alertOb?.pushAlert('You have successfully logged in.', 'success');
@@ -104,11 +103,18 @@ const LoginPage = () => {
   }
 
   useEffect(() => {
-    if (authValuesOb?.authValues)
+    if (accessToken && refreshToken) {
+        const decodedUser = jwtDecode(accessToken) as { id: string; username: string; name: string; email: string };
+        authValuesOb?.updateAuth({ accessToken, refreshToken, user: { ...decodedUser, verified: true }, remember });
+    }
+}, [accessToken, refreshToken]);
+
+  useEffect(() => {
+    if (authValuesOb?.authValues && location.pathname !== '/')
       navigate('/');
   }, [authValuesOb?.authValues]);
-  
-  if (authValuesOb?.authLoading) 
+
+  if (authValuesOb?.authLoading)
     return <Loading />;
 
   return (
@@ -157,6 +163,10 @@ const LoginPage = () => {
                 helperText={passwordError}
                 required
               />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <FormControlLabel label="Remember me" control={<Checkbox checked={remember} onChange={() => { setRemember(prev => !prev) }} />} />
             </Grid>
           </Grid>
 
