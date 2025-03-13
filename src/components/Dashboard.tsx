@@ -12,11 +12,15 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utility/axiosInstance";
 import AddIcon from "@mui/icons-material/Add";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useNavigate } from "react-router";
+import FileUpload from "./FileUpload";
 
 type NotebookData = {
   title: string;
@@ -26,17 +30,28 @@ type NotebookData = {
 const Dashboard = () => {
   const [recentNotebooks, setRecentNotebooks] = useState<NotebookData[]>();
   const [showDialog, setShowDialog] = useState(false);
+  const [showFileDialog, setShowFileDialog] = useState(false);
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
   const [addNotebookLoading, setAddNotebookLoading] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const md = useMediaQuery(theme.breakpoints.down('md'))
   const updateRecentNotebooks = async () => {
     const notebooks = (await axiosInstance.get("/notebook/getRecentNotebooks"))
       .data as NotebookData[];
     setRecentNotebooks(notebooks);
   };
 
-  const handleFabClick: React.MouseEventHandler<HTMLButtonElement> = () => {
+  const handleImportFabClick: React.MouseEventHandler<HTMLButtonElement> = ()=> {
+    setShowFileDialog(true);
+  }
+
+  const handleImportClose = ()=> {
+    setShowFileDialog(false);
+  }
+
+  const handleAddFabClick: React.MouseEventHandler<HTMLButtonElement> = () => {
     setShowDialog(true);
   };
 
@@ -108,19 +123,31 @@ const Dashboard = () => {
           }
         </Stack>
       </Container>
-      <Fab
-        variant="extended"
-        aria-label="Add a notebook"
-        sx={{
-          position: "fixed",
-          bottom: "2rem",
-          right: "2rem",
-        }}
-        onClick={handleFabClick}
-      >
-        <AddIcon sx={{ mr: 1 }} />
-        Add a notebook
-      </Fab>
+      <Box sx={{
+        position: "fixed",
+        right: '1rem',
+        bottom: '1rem'
+      }}>
+        <Fab
+          variant={!md ? 'extended' : 'circular'} size="large"
+          aria-label="Import a notebook"
+          sx={{
+            mr: 2
+          }}
+          onClick={handleImportFabClick}
+        >
+          <UploadFileIcon />
+          {!md && "Import a notebook"}
+        </Fab>
+        <Fab
+          variant={!md ? 'extended' : 'circular'} size="large"
+          aria-label="Add a notebook"
+          onClick={handleAddFabClick}
+        >
+          <AddIcon />
+          {!md && "Add a notebook"}
+        </Fab>
+      </Box>
       <Dialog open={showDialog}>
         <DialogTitle>New notebook</DialogTitle>
         <DialogContent>
@@ -151,6 +178,7 @@ const Dashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <FileUpload show={showFileDialog} handleClose={handleImportClose}/>
     </Box>
   );
 };
