@@ -3,6 +3,8 @@ import { useContext, useRef, useState } from "react";
 import { formatFileSize } from "../utility/file";
 import axiosInstance from "../utility/axiosInstance";
 import { AlertContext } from "./AlertSystem";
+import { useNavigate } from "react-router";
+import { AxiosError } from "axios";
 
 type FileUploadType = {
   show: boolean,
@@ -29,6 +31,8 @@ const FileUpload = ({ show, handleClose }: FileUploadType) => {
 
   const AlertSystem = useContext(AlertContext);
 
+  const navigate = useNavigate();
+
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -50,7 +54,7 @@ const FileUpload = ({ show, handleClose }: FileUploadType) => {
 
   const handleImport = async () => {
     try {
-      await axiosInstance.post('/notebook/uploadNotebookFile', {
+      const resp = await axiosInstance.post('/notebook/uploadNotebookFile', {
         notebook: file
       }, {
         headers: {
@@ -58,18 +62,14 @@ const FileUpload = ({ show, handleClose }: FileUploadType) => {
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.lengthComputable) {
-            console.log(progressEvent)
             if (progressEvent.total) {
               const bytes = progressEvent.loaded;
               const total = progressEvent.total || 0;
               let progress = 0;
-              console.log(bytes, total);
               if (total !== 0)
                 progress = (bytes / total) * 100;
               if (progress >= 100) {
                 setCurrentUploadState(prev => ({ ...prev, state: 'done' }))
-                handleRealClose();
-                AlertSystem?.pushAlert('Notebook successfully imported');
               } else {
 
                 setCurrentUploadState(prev => {
@@ -79,12 +79,25 @@ const FileUpload = ({ show, handleClose }: FileUploadType) => {
             }
           }
         }
-      })
+      });
+      const { id } = resp.data as { id: string };
+      navigate(`note/${id}`);
       setCurrentUploadState(prev => {
         return { ...prev, state: 'done' }
       })
+      handleRealClose();
+      AlertSystem?.pushAlert('Notebook successfully imported');
     } catch (err) {
-
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 400) {
+          const errData = err.response.data as { error: string };
+          setCurrentUploadState({
+            error: errData.error,
+            progress: 0,
+            state: 'error'
+          })
+        }
+      }
     }
   }
 
@@ -105,6 +118,9 @@ const FileUpload = ({ show, handleClose }: FileUploadType) => {
         </Box>)}
         {currentUploadState.state === 'uploading' &&
           <LinearProgress sx={{ mt: 2 }} variant="determinate" value={currentUploadState.progress} />
+        }
+        {currentUploadState.state === 'error' &&
+          <Typography color="error">{currentUploadState.error}</Typography> 
         }
         <Button
           sx={{ mt: 3 }}
