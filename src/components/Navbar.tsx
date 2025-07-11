@@ -22,7 +22,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import LogoutIcon from "@mui/icons-material/Logout";
-import UserIcon from "@mui/icons-material/AccountCircle";
 import { AuthContext } from "./Auth";
 
 const Navbar = () => {
