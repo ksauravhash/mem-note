@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -7,10 +7,12 @@ import {
   Typography,
   Grid2 as Grid,
   Link,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router";
 import StyledPaper from "./StyledPaper";
-import axiosInstance from "../utility/axiosInstance";
+import axiosInstance, { checkServerHealth } from "../utility/axiosInstance";
 import axios from "axios";
 import { AlertContext } from "../components/AlertSystem";
 import { AuthContext } from "../components/Auth";
@@ -34,6 +36,9 @@ const RegisterPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [serverStarting, setServerStarting] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [serverStatus, setServerStatus] = useState<'idle' | 'starting' | 'ready'>('idle');
 
   const navigate = useNavigate();
   const authValuesOb = useContext(AuthContext);
@@ -49,6 +54,36 @@ const RegisterPage = () => {
     confirmPasswordError,
     nameError,
   } = error;
+
+  // Check if server is ready
+  useEffect(() => {
+    if (serverStarting) {
+      const checkServerStatus = async () => {
+        try {
+          const isHealthy = await checkServerHealth();
+          if (isHealthy) {
+            setServerStarting(false);
+            setServerStatus('ready');
+            alertOb?.pushAlert('Server is now ready. You can register.', 'success');
+          } else {
+            throw new Error('Server not ready');
+          }
+        } catch (err) {
+          if (retryCount < 20) { // Limit to ~5 minutes of retries (15s * 20)
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, 15000); // Check every 15 seconds
+          } else {
+            setServerStarting(false);
+            setServerStatus('idle');
+            alertOb?.pushAlert('Server seems to be taking too long to start. Please try again later.', 'error');
+          }
+        }
+      };
+      
+      checkServerStatus();
+    }
+  }, [serverStarting, retryCount, alertOb]);
 
   const validateUsername = (username: string): boolean => {
     return !!username;
@@ -135,6 +170,17 @@ const RegisterPage = () => {
     setError(errorOb);
     if (isValid) {
       try {
+        // First check if the server is available
+        const isServerReady = await checkServerHealth();
+        
+        if (!isServerReady) {
+          setServerStarting(true);
+          setServerStatus('starting');
+          alertOb?.pushAlert('The server appears to be starting up. Please wait a moment.', 'info');
+          setLoading(false);
+          return;
+        }
+        
         const { confirmPassword, ...payload } = registrationDetail;
         await axiosInstance.post("user/register", payload);
         await axiosInstance.post("user/generateUserVerificationEmail", { username, email });
@@ -156,9 +202,17 @@ const RegisterPage = () => {
             setError(prev => ({ ...prev, [`${errData.type}Error`]: errData.message }));
           } else if (err.status && err.status >= 500 && err.status < 600) {
             navigate("/serverError");
+          } else if (err.code === 'ECONNABORTED' || err.message.includes('timeout') || 
+                    (err.response?.status === 503) || !err.response) {
+            // Server might be starting up (common with Render free tier)
+            setServerStarting(true);
+            setServerStatus('starting');
+            alertOb?.pushAlert('The server appears to be starting up. Please wait a moment.', 'info');
           }
         }
       }
+      setLoading(false);
+    } else {
       setLoading(false);
     }
   };
@@ -194,6 +248,18 @@ const RegisterPage = () => {
             Register
           </Typography>
         </Box>
+        
+        {serverStatus === 'starting' && (
+          <Alert 
+            severity="info" 
+            sx={{ mb: 2 }}
+            icon={<CircularProgress size={20} />}
+          >
+            Server is starting up. This may take up to 2 minutes with the deployed backend server.
+            {retryCount > 0 && ` Retry attempt: ${retryCount}/20`}
+          </Alert>
+        )}
+        
         <form>
           <Grid container spacing={2}>
             {/* Name Input */}
@@ -209,6 +275,7 @@ const RegisterPage = () => {
                 error={!!nameError}
                 helperText={nameError}
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
             {/* Username Input */}
@@ -225,6 +292,7 @@ const RegisterPage = () => {
                 helperText={usernameError}
                 autoComplete="username"
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
             {/* Email Input */}
@@ -241,6 +309,7 @@ const RegisterPage = () => {
                 helperText={emailError}
                 autoComplete="email"
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
 
@@ -258,6 +327,7 @@ const RegisterPage = () => {
                 helperText={passwordError}
                 autoComplete="new-password"
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -272,6 +342,7 @@ const RegisterPage = () => {
                 error={!!confirmPasswordError}
                 helperText={confirmPasswordError}
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
           </Grid>
@@ -285,9 +356,9 @@ const RegisterPage = () => {
               size="large"
               onClick={handleRegister}
               type="submit"
-              disabled={loading}
+              disabled={loading || serverStatus === 'starting'}
             >
-              {loading? "Loading..." : "Register"}
+              {loading ? "Loading..." : serverStatus === 'starting' ? "Waiting for server..." : "Register"}
             </Button>
           </Box>
 

@@ -9,10 +9,12 @@ import {
   Link,
   FormControlLabel,
   Checkbox,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate, useSearchParams } from "react-router";
 import StyledPaper from "./StyledPaper";
-import axiosInstance from "../utility/axiosInstance";
+import axiosInstance, { checkServerHealth } from "../utility/axiosInstance";
 import axios from "axios";
 import { AuthContext } from "../components/Auth";
 import { AlertContext } from "../components/AlertSystem";
@@ -27,6 +29,10 @@ const LoginPage = () => {
   const [passwordError, setPasswordError] = useState<string>("");
   const [remember, setRemember] = useState(false);
   const [serverError, setServerError] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [serverStarting, setServerStarting] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [serverStatus, setServerStatus] = useState<'idle' | 'starting' | 'ready'>('idle');
 
   const navigate = useNavigate();
 
@@ -37,10 +43,37 @@ const LoginPage = () => {
   const accessToken = searchParam.get('at');
   const refreshToken = searchParam.get('rt');
 
-
-
   const alertOb = useContext(AlertContext);
 
+  // Check if server is ready
+  useEffect(() => {
+    if (serverStarting) {
+      const checkServerStatus = async () => {
+        try {
+          const isHealthy = await checkServerHealth();
+          if (isHealthy) {
+            setServerStarting(false);
+            setServerStatus('ready');
+            alertOb?.pushAlert('Server is now ready. You can login.', 'success');
+          } else {
+            throw new Error('Server not ready');
+          }
+        } catch (err) {
+          if (retryCount < 20) { // Limit to ~5 minutes of retries (15s * 20)
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, 15000); // Check every 15 seconds
+          } else {
+            setServerStarting(false);
+            setServerStatus('idle');
+            alertOb?.pushAlert('Server seems to be taking too long to start. Please try again later.', 'error');
+          }
+        }
+      };
+      
+      checkServerStatus();
+    }
+  }, [serverStarting, retryCount, alertOb]);
 
   const validateUsername = (username: string): boolean => {
     return !!username;
@@ -54,6 +87,7 @@ const LoginPage = () => {
     e.preventDefault();
     let isValid = true;
     setServerError("");
+    setLoading(true);
 
     // Username validation
     if (!username) {
@@ -79,6 +113,17 @@ const LoginPage = () => {
 
     if (isValid) {
       try {
+        // First check if the server is available
+        const isServerReady = await checkServerHealth();
+        
+        if (!isServerReady) {
+          setServerStarting(true);
+          setServerStatus('starting');
+          alertOb?.pushAlert('The server appears to be starting up. Please wait a moment.', 'info');
+          setLoading(false);
+          return;
+        }
+        
         const payload = { username, password };
         const loginResponse = await axiosInstance.post("user/login", payload);
         const loginData = {...loginResponse.data, remember};
@@ -92,14 +137,37 @@ const LoginPage = () => {
             setServerError(err.response?.data.error);
           } else if (err.status && err.status >= 500 && err.status < 600) {
             navigate("/serverError");
+          } else if (err.code === 'ECONNABORTED' || err.message.includes('timeout') || 
+                    (err.response?.status === 503) || !err.response) {
+            // Server might be starting up (common with Render free tier)
+            setServerStarting(true);
+            setServerStatus('starting');
+            alertOb?.pushAlert('The server appears to be starting up. Please wait a moment.', 'info');
           }
         }
       }
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.replace(`${import.meta.env.VITE_API_BASE_URL}/user/login/google`);
+  const handleGoogleLogin = async () => {
+    try {
+      // Check if server is ready before redirecting
+      const isServerReady = await checkServerHealth();
+      
+      if (!isServerReady) {
+        setServerStarting(true);
+        setServerStatus('starting');
+        alertOb?.pushAlert('The server appears to be starting up. Please wait a moment.', 'info');
+        return;
+      }
+      
+      window.location.replace(`${import.meta.env.VITE_API_BASE_URL}/user/login/google`);
+    } catch (err) {
+      alertOb?.pushAlert('Unable to connect to the server. Please try again later.', 'error');
+    }
   }
 
   useEffect(() => {
@@ -107,7 +175,7 @@ const LoginPage = () => {
         const decodedUser = jwtDecode(accessToken) as { id: string; username: string; name: string; email: string };
         authValuesOb?.updateAuth({ accessToken, refreshToken, user: { ...decodedUser, verified: true }, remember });
     }
-}, [accessToken, refreshToken]);
+  }, [accessToken, refreshToken]);
 
   useEffect(() => {
     if (authValuesOb?.authValues && location.pathname !== '/')
@@ -133,6 +201,18 @@ const LoginPage = () => {
             Login
           </Typography>
         </Box>
+        
+        {serverStatus === 'starting' && (
+          <Alert 
+            severity="info" 
+            sx={{ mb: 2 }}
+            icon={<CircularProgress size={20} />}
+          >
+            Server is starting up. This may take up to 2 minutes with the deployed backend server.
+            {retryCount > 0 && ` Retry attempt: ${retryCount}/20`}
+          </Alert>
+        )}
+        
         <form>
           <Grid container spacing={2}>
             {/* Username Input */}
@@ -147,6 +227,7 @@ const LoginPage = () => {
                 error={!!usernameError}
                 helperText={usernameError}
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
 
@@ -162,22 +243,30 @@ const LoginPage = () => {
                 error={!!passwordError}
                 helperText={passwordError}
                 required
+                disabled={serverStatus === 'starting'}
               />
             </Grid>
 
             <Grid size={{ xs: 12 }}>
-              <FormControlLabel label="Remember me" control={<Checkbox checked={remember} onChange={() => { setRemember(prev => !prev) }} />} />
+              <FormControlLabel 
+                label="Remember me" 
+                control={
+                  <Checkbox 
+                    checked={remember} 
+                    onChange={() => { setRemember(prev => !prev) }} 
+                    disabled={serverStatus === 'starting'}
+                  />
+                } 
+              />
             </Grid>
           </Grid>
 
           {/* Server Error Message */}
-
           <Box mt={2} textAlign="center">
             <Typography variant="body2" color="error">
               {serverError}
             </Typography>
           </Box>
-
 
           {/* Login Button */}
           <Box mt={3}>
@@ -188,8 +277,9 @@ const LoginPage = () => {
               size="large"
               onClick={handleLogin}
               type="submit"
+              disabled={loading || serverStatus === 'starting'}
             >
-              Login
+              {loading ? "Loading..." : serverStatus === 'starting' ? "Waiting for server..." : "Login"}
             </Button>
           </Box>
           <Box mt={3}>
@@ -200,6 +290,7 @@ const LoginPage = () => {
               size="large"
               onClick={handleGoogleLogin}
               startIcon={<GoogleIcon />}
+              disabled={serverStatus === 'starting'}
             >
               Google Login
             </Button>
