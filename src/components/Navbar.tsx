@@ -112,6 +112,11 @@ const Navbar = () => {
           borderRight: "1px solid #ddd",
           display: { xs: "none", sm: "block" },
           transition: "width 0.3s ease",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          height: "100vh",
+          zIndex: 1200,
         }}
       >
         <Grid
@@ -229,6 +234,14 @@ const Navbar = () => {
           )}
         </Grid>
       </Grid>
+      
+      {/* Add a spacer to push content to the right of the sidebar */}
+      <Box sx={{ 
+        width: isCollapsed ? 70 : 200, 
+        flexShrink: 0,
+        display: { xs: "none", sm: "block" },
+        transition: "width 0.3s ease"
+      }} />
     </Grid>
   );
 };
